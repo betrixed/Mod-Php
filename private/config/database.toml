@@ -1,0 +1,8 @@
+# Just the database settings
+host = "localhost"
+username = "mrDb913e"
+password = '4829gh1AKsu077faMZ'
+dbname = "mrxyz"
+
+adapter = 'Mysql'
+charset = 'utf8'

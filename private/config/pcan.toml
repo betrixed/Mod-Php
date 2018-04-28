@@ -1,0 +1,12 @@
+noSSL = false
+implicitViews = true
+assetJoin = 'assets/prod/'
+assetSrc = 'assets/src/'
+pcanDir = '${PHP_DIR}'
+timezone = 'Australia/Sydney'
+domainName = 'mrxyz.test'
+publicUrl = 'mrxyz.test'
+shortName = 'Michael Rynn'
+logDir = '${PHP_DIR}/log'
+errorLog = '${PHP_DIR}/log/error.log'
+logo = '/image/gallery/site/logo.jpg'

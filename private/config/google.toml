@@ -1,0 +1,5 @@
+# Just google related settings
+
+loginCaptcha = false
+signupCaptcha = false
+recaptcha = false

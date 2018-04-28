@@ -1,0 +1,6 @@
+# 
+#css = ['sbo.css', 'novosti.css']
+roles = ['Guest']
+useAcl = false
+
+

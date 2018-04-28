@@ -1,0 +1,26 @@
+
+[cache._map]
+":action" = 1
+
+[_default]
+controller = 'index'
+action = 'index'
+
+[_notFound]
+controller = 'errors'
+action = 'show404'
+   
+[dashboard.index]
+pattern='/'
+
+[dashboard._map]
+":action" = 1
+
+# '_list' indicates a list of method names 'list' is method listAction
+[errors]
+_list = ['index', 'show404', 'show505']
+
+
+
+
+

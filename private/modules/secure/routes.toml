@@ -1,0 +1,59 @@
+# PHP stores numeric index arrays and key-value pairs the same
+# Use keys of _actions to indicate key-value pairs 
+# _list to indicate ordered list
+# _map because integers cannot be keys for ':action'
+# _special 
+[_default]
+controller = 'index'
+action = 'index'
+
+[_notFound]
+controller = 'errors'
+index = 'show404'
+
+# '_actions' table of method => pattern
+[confirm]
+controller = 'user_control'
+_actions = { confirmEmail = '{code}/{email}' }
+   
+[dashboard.index]
+pattern='/'
+
+[dashboard._map]
+":action" = 1
+
+# '_list' indicates a list of method names 'list' is method listAction
+[errors]
+_list = ['index', 'show404', 'show505']
+
+[session]
+_list = ['start','end']
+
+[id]
+controller='session'
+_list = ['index','signup','end','forgotPassword','changePassword']
+
+[links._actions]
+link = 'link/{id}'
+
+[users]
+_list = ['index', 'new']
+
+[permissions]
+_list = ['index', 'new']
+
+[resource]
+_list = ['index','new']
+
+[resource.edit]
+pattern = 'edit/{id}'
+
+[msg]
+
+[signup]
+
+[reset-password]
+controller = 'user_control'
+_actions = { resetPassword = '{code}/{email}' }
+
+

@@ -1,0 +1,74 @@
+# PHP stores numeric index arrays and key-value pairs the same
+# Use keys of _actions to indicate key-value pairs 
+# _list to indicate ordered list
+# _map because integers cannot be keys for ':action'
+# _pattern -- array of tables with match,controller, action 
+
+['/']
+controller = 'index'
+action = 'index'
+
+[_notFound]
+controller = 'error'
+action = 'show404'
+
+[[_pattern]]
+match='article/{name}'
+action = 'byTitle'
+controller = 'article'
+
+[[_pattern]]
+match='confirm/{code}/{email}'
+controller = 'user_control'
+action = 'confirmEmail'
+   
+[[_pattern]]
+match='dashboard/:action'
+":action" = 1
+
+[[_pattern]]
+match = 'reset-password/{code}/{email}'
+controller = 'user_control'
+action = 'resetPassword'
+
+[[_pattern]]
+match = 'account/:action'
+controller = 'user_control'
+":action" = 1
+
+[errors]
+_list = ['index', 'show404', 'show505']
+
+[index]
+_list = ['index', 'home', 'side']
+
+
+[session]
+_list = ['start','end']
+
+[id]
+controller='session'
+_list = ['index','signup','end','forgotPassword','changePassword']
+
+[cat._actions]
+index = 'index/{catclean}'
+fetch = 'fetch/{id}'
+
+[sitemap._actions]
+
+[links._map]
+':action' =  1
+
+[[_pattern]]
+match = 'link/{id}'
+controller = 'links'
+action = 'link'
+
+
+[msg]
+[contact]
+[signup]
+
+
+
+

@@ -1,0 +1,15 @@
+nbproject/**
+private/Old_Pcan/**
+private/cache/**
+private/vendor/**
+private/setup/**
+private/log/error.log
+private/.phalcon
+web/assets/node_modules/**
+web/image/**
+web/file/**
+web/css/**
+web/js/**
+web/assets/yarn.lock
+web/assets/module
+

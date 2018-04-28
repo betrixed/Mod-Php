@@ -1,0 +1,28 @@
+[_default]
+controller = 'home'
+action = 'index'
+
+[edit.index]
+methods = ['GET']
+
+[edit.new]
+methods = ['GET','POST']
+
+[edit.note]
+methods = ['GET','POST']
+pattern = 'blog/{id}'
+
+[home.index]
+methods = ['GET']
+
+[home.link]
+methods = ['GET']
+
+[home.home]
+methods = ['GET']
+
+[[_pattern]]
+match = '/article/{name}'
+action = 'byTitle'
+controller = 'article'
+module = 'page'
