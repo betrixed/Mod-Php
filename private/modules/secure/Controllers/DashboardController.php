@@ -14,6 +14,8 @@ class DashboardController  extends \Phalcon\Mvc\Controller {
         $view->lastLogin = $this->session->get('last');
         $view->chimpEnabled = false;
         $ctx->pickView($view, 'dashboard/index');
+        $view->setTemplateBefore('index');
+        
         $this->elements->addAsset('bootstrap');
         
         

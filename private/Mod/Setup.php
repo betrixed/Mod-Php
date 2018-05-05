@@ -13,7 +13,6 @@ use Phalcon\Session\Adapter\Files as SessionAdapter;
 use Phalcon\Mvc\View\Engine\Volt as VoltEngine;
 use Phalcon\Mvc\View;
 use Phalcon\Mvc\Url;
-
 use Phalcon\Mvc\Model\Metadata\Files as MetaData;
 
 const SESSION_TIME_OUT = 4 * 3600;
@@ -120,7 +119,7 @@ class Setup {
             return new \Mod\Plugins\Elements();
         });
         
-        $metaDir = $config->application->metaDataDir;
+        $metaDir = Path::endSep($config->metaDir);
 
         $di->setShared('modelsMetadata', function () use($metaDir) {
             return new MetaData(

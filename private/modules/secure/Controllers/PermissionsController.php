@@ -73,7 +73,7 @@ class PermissionsController extends \Phalcon\Mvc\Controller
                 //$this->acl->rebuild();
                 
                 
-                $resources = \Pcan\Models\Resource::find(['order' => 'name, action']);
+                $resources = Resource::find(['order' => 'name, action']);
                 $rlist = [];
                 $ct = 0;
                 $resAction = null;
@@ -90,7 +90,7 @@ class PermissionsController extends \Phalcon\Mvc\Controller
                 
                 $view->acl = $rlist;
                 // Pass the current permissions to the view
-                $db = $this->getDb();
+                $db = $this->db;
                 $stmt = $db->query("select r.id, r.name, r. action, p.groupId, g.name as `group` from resource r"
                         . " join permissions p on r.id = p.resourceId"
                         . " join user_group g on g.id = p.groupId" 

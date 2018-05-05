@@ -45,8 +45,8 @@ class CacheController extends \Phalcon\Mvc\Controller {
     
     protected function clearMenuCache()
     {
-        $baseDir = Path::$config->cacheDir;
-        Path::deleteAllFiles($baseDir . "menu_*.dat");
+        $baseDir = Path::$config->configCache;
+        Path::deleteAllFiles($baseDir . "/menu_*.dat");
     }
     
 

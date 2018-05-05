@@ -17,7 +17,7 @@ $(function() {
 })(); 
 </script>
 <p><em>Unselected categories are: </em>{{ cat_values }}</p>
-<form id='categoryList' action="{{ '/' ~ myController }}categorytick" method="post">
+<form id='categoryList' action="{{ myController }}categorytick" method="post">
 <table class='table table-striped'>
 <?php 
     $rowid = 0;

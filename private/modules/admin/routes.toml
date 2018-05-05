@@ -20,7 +20,19 @@ pattern='/'
 [errors]
 _list = ['index', 'show404', 'show505']
 
+[menu.index]
+methods = ['GET']
 
+[menu.edit]
 
+[menu.list]
 
+[menu.item]
+pattern = 'item/{id}'
+
+[menu.link]
+
+[menu.unlink]
+
+[menu.subitem]
 

@@ -45,6 +45,7 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
     public $modules; // Array of  dynamic configured modules 
     public $activeModule; // config subsection of active module
     public $initialURI;  // first time look at GET['_url']
+    public $uriModule; // if a module component in GET{'_url']
     public $isMakingView;  // if true, exceptions need to handled with grace
     public $acl; // security plugin, if any
     /**
@@ -109,16 +110,14 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         $modConfig = $this->activeModule;
         $path = $modConfig->dir;
         $routeFile = $this->getRoutesConfigPath();
-        $routeCache = $this->config->cacheDir . "/routes_" . $modConfig->name . ".dat";
+        $routeCache = $this->config->configCache . "/routes_" . $modConfig->name . ".dat";
         
         if (!file_exists($routeCache) || (filemtime($routeCache) < filemtime($routeFile)) ) {
         //if(true) {
             $info = pathinfo($routeFile);
             $routeData = self::getArrayConfig($routeFile, $info['extension']);
             $router = new Router(false);
-            if ($modConfig->isDefaultModule) {
-                $router->setDefaultModule($modConfig->alias);
-            }
+           
             $unpack = new RoutesUnpack($router, $modConfig->alias, $modConfig->isDefaultModule);
             $unpack->addRouteData($routeData);
             file_put_contents($routeCache,serialize($router));
@@ -126,7 +125,19 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         else {
             $router = unserialize(file_get_contents($routeCache));
         }
-
+        // Set default module and URI after unserialize
+        if ($modConfig->isDefaultModule) {
+               $router->setDefaultModule($modConfig->alias);
+               if ($this->uriModule === $modConfig->name)
+               {
+                   $_GET['_url'] = str_replace(
+                           '/' . $this->uriModule, 
+                           '',
+                           $this->initialURI
+                           );
+               }
+        }
+        
         $this->di->setShared('router', $router);
     }
     
@@ -400,47 +411,41 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
     }
 
     /**
-     * Set next execution stage to a PHP file defined by the module config,  
-     * define MODULE.
-     * If moduleConfig parameters dir or namespace not set, for root namespace,
-     * set by assuming Module is in root directory and namespace.
+     * Return path to next bootstrap file or Exception
+     * Relative path means in the Module directory tree.
      * @param type $modConfig
-     * @return boolean
+     * @return string
      */
     protected function setActiveModule($modConfig) {
         $this->activeModule = $modConfig;
-        // set if  default module  or not : Compare name to defaultModule
-
-        $configurator = $modConfig->dir . DS . $modConfig->get('bootstrap', 'mod_bootstrap.php');
-        if (file_exists($configurator)) {
-            define('MODULE', $configurator);
+        $bootstrap = $modConfig->get('bootstrap', 'mod_bootstrap.php');
+        $isAbsolute = Path::startsWith($bootstrap,ROOT_DIR);
+        if (!$isAbsolute) 
+        {
+            $bootstrap = $modConfig->dir . DS . $bootstrap;
+        }
+        
+        if (file_exists($bootstrap)) {
+             return $bootstrap;
         }
         else {
-            throw new \Exception("Active modules bootstrap file not found: " .  $configurator);
+            throw new \Exception("File not found: " .  $bootstrap);
         }
+       
     }
 
-    /**
-     * Return the name of the module implied by a URI string
-     * or return false or empty string. Finds match '/module/' name.
-     * @param array $modulesConfig
-     * @param string $myURI
-     * @return boolean
-     */
-    static public function uriModuleMatch(array $modulesConfig, string $myURI) {
-        // filter_input(INPUT_GET, '_url'); // saw router.zep
-        if ($myURI != '/') { // find match module name
+    static public function uriModuleStr($myURI)
+    {
+        if (!empty($myURI) && $myURI !== '/') { // find match module name
             $ipos = strpos($myURI, '/');
             if ($ipos == 0) {
                 $ipos = strpos($myURI, '/', 1);
-                $test = ($ipos > 1) ? substr($myURI, 1, $ipos - 1) : substr($myURI, 1);
-                if (isset($modulesConfig[$test])) {
-                    return $test;
-                }
+                return ($ipos > 1) ? substr($myURI, 1, $ipos - 1) : substr($myURI, 1);
             }
-        }
-        return false;
+        }  
+        return '';
     }
+
 
     /**
      * This action is executed before execute any action in the application
@@ -573,11 +578,26 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         }
 
         $this->initialURI = filter_input(INPUT_GET, '_url');
-        $alias = empty($this->initialURI) ? $config->defaultModule : self::uriModuleMatch($this->allModules, $this->initialURI);
-        // name of module
-        if (empty($alias)) {
-            $alias = $config->defaultModule;
+        $key = self::uriModuleStr($this->initialURI);
+        if (!empty($key)) {
+            if ('/' . $key === $this->initialURI) {
+        // see if the URL is a mapped keyword in config['urlmap']
+                 $config = $this->config;
+                 if ($config->exists('urlmap')) {
+                     $config = $config['urlmap'];
+                     if ($config->exists($key)) {
+                         $item = $config[$key];
+                         $url = '/' . $item->controller . '/' . $item->action;
+                         $_GET['_url'] = $url;
+                         $key = self::uriModuleStr($url);
+                     }
+                 }
+             }          
         }
+        $this->uriModule = $key;
+        $alias = (!empty($key) && isset($this->allModules[$key])) 
+                ? $key
+                : $config->defaultModule;
         $myConfig = $this->getModuleConfig($alias);
         // nearly good to go
         return $this->setActiveModule($myConfig);

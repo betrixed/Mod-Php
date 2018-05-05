@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+    <?php echo '<!--', __FILE__, ' -->'; ?>
     <head>
         <meta charset="utf-8">
          <!--{{ get_title() }}-->

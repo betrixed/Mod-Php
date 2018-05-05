@@ -74,7 +74,7 @@
             {{ link_to( "/admin/menu/index", "Menus") }}
         </p>
         <p>
-            {{ link_to( "/admin/meta/index", "Meta-data") }}
+            {{ link_to( "/page_admin/meta/index", "Meta-data") }}
         </p>
         <p>
             {{ link_to( "/secure/permissions/index", "Permissions") }}

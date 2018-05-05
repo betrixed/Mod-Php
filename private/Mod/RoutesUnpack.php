@@ -239,7 +239,11 @@ class RoutesUnpack {
             $paths = [];
             
             foreach($table as $key => $value) {
+                
                 switch($key) {
+                case 'paths':
+                    $paths = $value;
+                    break;
                 case 'match':
                     $match = $value;
                     break;
@@ -247,7 +251,12 @@ class RoutesUnpack {
                     $paths['controller'] = $value;
                     break;
                 case 'action':
-                    $paths['action'] = $value;
+                    if (is_numeric($value)) {
+                        $paths['action'] = intval($value);
+                    }
+                    else {
+                        $paths['action'] = $value;
+                    }
                     break;
                 case 'methods':
                     $methods = $value->toArray();

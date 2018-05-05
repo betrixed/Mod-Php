@@ -16,7 +16,6 @@ defined('DS') || define('DS', DIRECTORY_SEPARATOR);
 
 class Path {
 
-    
     static public $config; // global registry / config
     /**
      * Correct slash direction on path according to preferred OS path.
@@ -151,8 +150,10 @@ class Path {
         switch ($ext) {
             case 'toml':
                 // toml parsing is a time penalty, try and fix it
-                $dirpath = str_replace([DS,':'],'_',$pinfo['dirname']);
-                $cachePath = Path::endSep(self::$config->cacheDir) . $dirpath . '-' . $pinfo['filename'] . '.ktc';
+                
+                $cachePath = Path::endSep(self::$config->configCache) . 
+                        str_replace([DS,':'],'_',$pinfo['dirname']) .
+                        '-' . $pinfo['filename'] . '.ktc';
                 if (file_exists($cachePath) && (filemtime($cachePath) > filemtime($path))) {
                     $result = unserialize(file_get_contents($cachePath));
                 }

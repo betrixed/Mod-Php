@@ -13,10 +13,8 @@ class MenuTree extends Component {
     
     public function getCacheName($menuName)
     {
-
-        $config = $this->getDI()->get('config');
-        $cacheDir = $config->pcan->cacheDir;
-        $menufile = $cacheDir . "menu_" . $menuName . "_cache.dat";
+        $config = $this->config;
+        $menufile = $config->configCache . "/menu_" . $menuName . "_cache.dat";
         return $menufile;
 
     }

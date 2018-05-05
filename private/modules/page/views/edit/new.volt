@@ -5,7 +5,7 @@
 <div align="center">
     <h2>Create Content</h2>
 </div>
-<form action="{{myModule ~ 'edit/new'}}">
+<form method='post' action="{{myModule ~ 'edit/new'}}">
 <table>
     <tr>
         <td align="right">

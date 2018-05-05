@@ -85,8 +85,10 @@ class Elements extends Component {
         $link = (!empty($menu->controller)) ? $menu->controller : '';
         if (!empty($menu->action)) {
             if (strlen($link) > 0)
+            {
                 $link .= '/';
-            $link .= $menu->action;
+            }
+            $link = '/' . $link . $menu->action;
         }
         if (strlen($link) > 0) {
             echo $this->tag->linkTo($link, $menu->caption);
@@ -129,19 +131,26 @@ class Elements extends Component {
     public function getLoginMenu() {
         $rightMenu = new Menu();
         $menu = new Menu();
-
-        $menu->controller = 'id';
+        
+        $menu->controller = 'secure/id';
         $rightMenu->addItem($menu);
         $rightMenu->class = 'navbar-right';
+        
+        $urlmap = $this->config->urlmap;
+        
         if ($this->loggedIn) {
-            $menu->action = 'end';
-            $menu->caption = 'Log Out';
+            $item = $urlmap['logout'];
+            
+            
+            
         } else {
-            $menu->action = 'index';
-            $menu->caption = 'Log In';
-            $menu->class = 'cd-signin';
+            $item = $urlmap['login'];
         }
-
+        $menu->action = $item->action;
+        $menu->controller = $item->controller;
+        $menu->caption = $item->caption;
+        $menu->class = $item->class;
+        
         return $rightMenu;
     }
 

@@ -6,6 +6,13 @@
  * and switches to the configured type for next step.
  * @author Michael Rynn
  */
+
+namespace Mod;
+
+(new \Phalcon\Loader())->registerNamespaces(
+        ['Mod' => PHP_DIR . "/Mod"]
+        )->register();
+
 error_reporting(E_ALL & ~E_WARNING);
 ini_set('display_errors', 'On');
 
@@ -15,18 +22,13 @@ define('APP_PATH', MOD_DIR . '/app');
 define('DATETIME_FORMAT', 'Y-m-d H:i:s');
 define('DEV_VERSION', '1.0');
 
-use Mod\Path;
-use Phalcon\Loader;
-
-(new Loader())->registerNamespaces([
-    'Mod' => PHP_DIR . '/Mod',
-])->register();
 
 $gPaths = [
     'phpDir' => PHP_DIR,
     'cacheDir' => PHP_DIR . '/cache',
     'webDir' => WEB_ROOT,
-    'configDir' => PHP_DIR . '/config'
+    'configDir' => PHP_DIR . '/config',
+    'configCache' => PHP_DIR . '/cache/config'
 ];
 
 Path::$config = new \Pun\KeyTable($gPaths);
@@ -42,7 +44,10 @@ try {
         case 'module' :
 
         default :
-            require 'runModule.php';
+            $ctx = new Context();
+            $mod_strap = $ctx->init(Path::$config);  
+            $ctx->di->setShared('mod', $ctx->activeModule);
+            require $mod_strap;
     }
 }
 catch(\Exception $ex) {

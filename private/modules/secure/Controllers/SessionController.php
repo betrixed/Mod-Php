@@ -179,9 +179,8 @@ class SessionController extends \Phalcon\Mvc\Controller
      */
     public function endAction()
     {
-        $this->session->remove('auth');
         $this->flash->success('Goodbye!');
-        $this->endSecure('/index/index');
+        $this->acl->endSecure('/home');
         return false;
     }
     

@@ -32,7 +32,7 @@ class Security extends Plugin
     public $urlModule;
     public $controller;
     public $action;
-    public $config;
+    //public $config;
     public $isMobileFlag;
     public $device;
     public $agent;
@@ -42,7 +42,7 @@ class Security extends Plugin
     
     public function getConfig()
     {
-        if (is_null($this->config))
+        if (empty($this->config))
         {
             $this->config = $this->getDI()->get('config');
         }
@@ -512,6 +512,11 @@ EOD;
         $acl->allow('Admin', 'admin/permissions', 'index');
         return $acl;
     }
+    protected function aclFilePath() {
+        $config = $this->getConfig();
+        $cacheDir = $config->cacheDir;
+        return $cacheDir . "/aclcache.dat";
+    }
     public function getAcl()
     {
         $config = $this->getConfig();
@@ -520,8 +525,8 @@ EOD;
         {
             return $this->cacheAcl;
         }
-        $cacheDir = $config->pcan->cacheDir;
-        $aclfile = $cacheDir . "aclcache.dat";
+        
+        $aclfile = $this->aclFilePath();
         
         if (is_file($aclfile))
         {
@@ -536,7 +541,7 @@ EOD;
     
     public function resetAcl()
     {
-        $aclfile = $this->getConfig()->pcan->cacheDir . "aclcache.dat";
+        $aclfile = $this->aclFilePath();
         unlink($aclfile); 
         unset($this->cacheAcl);
     }
@@ -554,9 +559,10 @@ EOD;
     }
 
     public function endSecure($uri) {
-        $req = $this->request;
-        $url = "http://" . $req->getHttpHost() . $uri;
-        $this->response->redirect($url);
+        $this->session->remove(self::SessionKey);
+        //$req = $this->request;
+        //$url = "http://" . $req->getHttpHost() . $uri;
+        $this->response->redirect($uri);
     }
     
     public function readSession()
@@ -618,7 +624,9 @@ EOD;
         $this->controller = $controller;
         $this->action = $action;
         
-      
+        if ($controller === "errors") {
+            return true;
+        }
         $config = $this->getConfig();
         $ctx = $this->di->get('ctx');
         $mod_cfg = $ctx->getModuleConfig($module);
@@ -628,12 +636,22 @@ EOD;
         
         $this->urlModule = $module;
         
-        
+
         if (!empty($mod_cfg))
         {
-            $useAcl = $mod_cfg->get('useAcl');
-            if (!is_null($useAcl) && ($useAcl == false))
-                return true;
+            if ($mod_cfg->exists('roles')) {
+                $roles = $mod_cfg->roles;
+                foreach($roles as $role) {
+                    if ($this->hasRole($role)) {
+                        return true;
+                    }
+                }
+            }
+            else {
+                $useAcl = $mod_cfg->get('useAcl');
+                if (!is_null($useAcl) && ($useAcl == false))
+                    return true;
+            }
         }
 
         // Obtain the ACL list
@@ -650,7 +668,7 @@ EOD;
             }
         }
             // If he doesn't have access forward him to the index controller
-       $msg =  "You don't have access to " . $resourceName . '/' . $action;      
+       $msg =  "Not found: " . $resourceName . '/' . $action;      
 
         $this->flash->error($msg);
         

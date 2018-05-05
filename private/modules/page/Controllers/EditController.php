@@ -16,17 +16,24 @@ use Page\Models\Links;
 use Mod\PageInfo;
 use Page\Models\Event;
 use Page\Forms\CommentForm;
+use Mod\Text;
+
 /*use Pcan\Plugins\SummerNote;
 use Pcan\Plugins\DateTimePicker;
 use Pcan\Plugins\JQueryForm;
 */
-require_once __DIR__ . '/../Html.php';
 
-   
 class EditController extends \Phalcon\Mvc\Controller {
 
     public $posted;
 
+    protected function pickView($pick)
+    {
+        $view = $this->view;
+        $this->ctx->pickView($view, 'edit/' . $pick);
+        $view->myModule = "/page/";
+        $view->myController = "/page/edit/";
+    }
     protected function buildAssets()
     {
        $this->elements->addAsset('bootstrap');
@@ -136,6 +143,7 @@ class EditController extends \Phalcon\Mvc\Controller {
     public function initialize() {
         $this->view->setTemplateBefore('id');
         $this->posted = false;
+        $this->myController = '/page/edit/';
     }
 
     public function deleteFileAction() {
@@ -148,7 +156,7 @@ class EditController extends \Phalcon\Mvc\Controller {
             $blog_id = $request->getPost('blogid', 'int');
             if (isset($file_id)) {
                 $this->view->setRenderLevel(View::LEVEL_ACTION_VIEW);
-                $this->pickView("blog/upload");
+                $this->pickView("upload");
                 $di = \Phalcon\DI::getDefault();
                 $config = $di->get('config');
                 $upfile = FileUpload::findFirst(array(
@@ -179,7 +187,7 @@ class EditController extends \Phalcon\Mvc\Controller {
     }
 
     public function categorytickAction() {
-        $this->pickView("blog/category");
+        $this->pickView("category");
         $this->view->setRenderLevel(View::LEVEL_ACTION_VIEW);
 
         $request = $this->request;
@@ -249,7 +257,7 @@ class EditController extends \Phalcon\Mvc\Controller {
 
     }
     public function eventListAction() {
-        $this->pickView("blog/event");
+        $this->pickView("event");
         $this->view->setRenderLevel(View::LEVEL_ACTION_VIEW);
         
         $request = $this->request;
@@ -301,7 +309,7 @@ class EditController extends \Phalcon\Mvc\Controller {
     }
 
     public function eventAction() {
-        $this->pickView("blog/event");
+        $this->pickView("event");
         $this->view->setRenderLevel(View::LEVEL_ACTION_VIEW);
         $request = $this->request;
         if ($request->isPost() && $request->isAjax()) {
@@ -454,8 +462,8 @@ class EditController extends \Phalcon\Mvc\Controller {
           $s = ob_get_clean();
           $this->flash->notice($s); */
         $view = $this->view;
-        $this->ctx->pickView($view, "edit/index");
-        $view->myModule = "/page/";
+        $this->pickView("index");
+        
         $view->page = $paginator;
 
         $catquery = $db->query("select id, name from blog_category");
@@ -552,7 +560,7 @@ class EditController extends \Phalcon\Mvc\Controller {
         }
 
         $this->flash->success("blog was created successfully");
-        $this->response->redirect($this->myController . "edit/" . $blog->id);
+        $this->response->redirect($this->myController . "blog/" . $blog->id);
     }
     /**
      * Displayes the creation form
@@ -562,9 +570,7 @@ class EditController extends \Phalcon\Mvc\Controller {
         if (!$this->request->isPost()) {
 // default to new.volt
             $view = $this->view;
-            $this->ctx->pickView($view, "edit/new");
-            $view->myModule = "/page/";
-            
+            $this->pickView("new");        
             return;
         }
         
@@ -593,7 +599,7 @@ class EditController extends \Phalcon\Mvc\Controller {
         }
 
         if ($titleChanged && $autoUrl) {
-            $this->unique_title_url($blog, url_slug($blog->title));
+            $this->unique_title_url($blog, Text::url_slug($blog->title));
         }
         $blog->article = $this->request->getPost("article");
         
@@ -688,7 +694,7 @@ class EditController extends \Phalcon\Mvc\Controller {
         $view->events = $this->getEvents($id);
         $view->categoryList = $this->getCategoryList($id);
         
-        $this->ctx->pickView($view, 'edit/note');
+        $this->pickView('note');
     }
 
     /**
@@ -721,7 +727,7 @@ class EditController extends \Phalcon\Mvc\Controller {
         if ($this->posted)
             return true;
         $view = $this->view;
-        $this->ctx->pickView('edit/note');
+        $this->pickView('note');
         
         if (!$this->request->isPost()) {
             $this->editForm($id);
@@ -771,9 +777,8 @@ class EditController extends \Phalcon\Mvc\Controller {
         if ($this->posted)
             return true;
         $view = $this->view;
-        $this->ctx->pickView($view, "edit/note");
-        $view->myModule = "/page/";
-        $view->myController = "/page/edit/";
+        $this->pickView("note");
+        
         
         $this->blogAssets();
         

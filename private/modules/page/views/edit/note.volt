@@ -169,7 +169,7 @@ $cat_blogid = $myview->cat_blogid;
         <div class='panel-body'>
             <div class="container padborder">
                 <div id="event_status" >{% include "edit/event.volt" %}</div>
-                <form id='eventForm' action="{{ '/' ~ myController ~ 'event'}}" method="post">
+                <form id='eventForm' action="{{ myController ~ 'event'}}" method="post">
                     <input type="hidden" name="event_id" value="" />
                     <input type="hidden" name="event_blogid" value="{{ id}}" />
                     <p>Add Event</p>
