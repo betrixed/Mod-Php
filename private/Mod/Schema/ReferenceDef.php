@@ -23,15 +23,6 @@ class ReferenceDef extends NameDef {
         return new Reference($this->name, $this->data);
     }
 
-    public function getData() {
-        return $this->data;
-    }
-
-    public function init($name, $data) {
-        $this->name = $name;
-        $this->data = $data;
-    }
-
     static function isEqual(NameDef $a, NameDef $b) {
         return NameDef::isEqual($a, $b);
     }

@@ -14,70 +14,84 @@ namespace Mod\Schema;
  *
  * @author Michael Rynn
  */
-class NameDef {
+class NameDef
+{
 
     //put your code here
     protected $name;
     protected $data;
-    
-    public function __construct() {
+
+    public function __construct()
+    {
         $this->data = [];
     }
-    
-    public function init($name, $data) {
+
+    public function getData()
+    {
+        return $this->data;
+    }
+
+    public function init($name, $data)
+    {
         $this->name = $name;
         if (!is_array($data)) {
             $data = $data->toArray();
         }
         $this->data = $data;
     }
-    
+
     /**
      * True if all particulars of data match.
      * @param NameDef $a
      * @param NameDef $b
      * @return boolean
      */
-    
-    static function isEqual(NameDef $a, NameDef $b) {
-        return ($a->name == $b->name) 
-            && (NameDef::arraytree_equal($a->data, $b->data));
+    static function isEqual(NameDef $a, NameDef $b)
+    {
+        return ($a->name == $b->name) && (NameDef::arraytree_equal($a->data, $b->data));
     }
-    
-    public function getName() {
+
+    public function getName()
+    {
         return $this->name;
     }
-    
-    public function setName($val) {
+
+    public function setName($val)
+    {
         $this->name = $val;
     }
 
-    public function unsetValue($key) {
+    public function unsetValue($key)
+    {
         if (isset($this->data[$key])) {
             unset($this->data[$key]);
         }
     }
-    public function getValue($key) {
-        return (isset($this->data[$key]))
-                ? $this->data[$key]
-                : null;
+
+    public function getValue($key)
+    {
+        return (isset($this->data[$key])) ? $this->data[$key] : null;
     }
+
     /**
      * Adjust or add a column property
      * @param type $key
      * @param type $value
      */
-    public function setValue($key, $value) {
+    public function setValue($key, $value)
+    {
         $this->data[$key] = $value;
     }
-/**
- * Examine array references and return difference as array.
- * Does not modify referenced arrays.
- * @param array $a
- * @param array $b
- * @return array
- */
-    static public function array_recurse_diff(array &$a, array &$b) {
+
+    /**
+     * Examine array references and return difference as array.
+     * Does not modify referenced arrays.
+     * @param array $a
+     * @param array $b
+     * @return array
+     */
+    static public function array_recurse_diff(array &$a, array &$b)
+    {
         $aReturn = [];
         foreach ($a as $aKey => $aValue) {
             if (isset($b[$aKey])) { // array_key_exists better?
@@ -91,8 +105,7 @@ class NameDef {
                         $aReturn[$aKey] = $aValue;
                     }
                 }
-            }
-            else {
+            } else {
                 $aReturn[$aKey] = $aValue;
             }
         }
@@ -105,11 +118,13 @@ class NameDef {
      * @param array $b
      * @return boolean if a and b match all the way
      */
-    static public function arraytree_equal(array &$a, array &$b) {
+    static public function arraytree_equal(array &$a, array &$b)
+    {
         if (!is_array($a) || !is_array($b) || (count($a) != count($b))) {
-           return false;
+            return false;
         }
-        return (count(self::array_recurse_diff($a, $b)) == 0) && (count(self::array_recurse_diff($b, $a)) == 0) ? true : false;   
+        return (count(self::array_recurse_diff($a, $b)) == 0) && (count(self::array_recurse_diff($b, $a))
+                == 0) ? true : false;
     }
 
 }
