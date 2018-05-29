@@ -348,6 +348,11 @@ class Elements extends Component {
         }    
     }
     
+    public function addAssetNames($data) {
+        foreach($data as $name) {
+            $this->addAsset($name);
+        }
+    }
     public function addAsset($name) {
         $cfg = $this->di->get('config');
         $path = $cfg->configDir . "/assets/" . $name . ".php";

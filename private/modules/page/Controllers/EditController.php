@@ -246,16 +246,15 @@ class EditController extends \Phalcon\Mvc\Controller {
         }
        
     }
+    
     protected function blogAssets()
     {
         $elements = $this->elements;
-        
-        $elements->addAsset('bootstrap');
-        $elements->addAsset('jquery-form');
-        $elements->addAsset('summer-note');
-        $elements->addAsset('datetime-picker');
-
+        $elements->addAssetNames(
+                ['bootstrap', 'jquery-form', 'summer-note', 'datetime-picker']            
+                    );
     }
+    
     public function eventListAction() {
         $this->pickView("event");
         $this->view->setRenderLevel(View::LEVEL_ACTION_VIEW);

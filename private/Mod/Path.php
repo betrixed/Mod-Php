@@ -11,10 +11,11 @@ namespace Mod;
 
 use Pun\TomlReader;
 use Pun\Preg;
+use Pun\Path as CPath;
 
 defined('DS') || define('DS', DIRECTORY_SEPARATOR);
 
-class Path {
+class Path extends CPath {
 
     static public $config; // global registry / config
     /**
@@ -27,14 +28,14 @@ class Path {
     static function startsWith($target, $with) {
         return (substr($target,0, strlen($with)) === $with);
     }
-    static function native(string $path) {
+    /*static function native(string $path) {
         if (DS == '/') {
             $result = str_replace("\\", DS, $path);
         } else {
             $result = str_replace('/', DS, $path);
         }
         return $result;
-    }
+    }*/
 
     /**
      * 
@@ -44,7 +45,7 @@ class Path {
      * @param string $path
      * @return string
      */
-    static function endSep(string $path) {
+    /*static function endSep(string $path) {
         $sep = substr($path, -1);
         if ($sep !== DS) {
             if ($sep == "\\") {
@@ -60,7 +61,7 @@ class Path {
         }
         return $path;
         
-    }
+    }*/
     
     static public function deleteAllFiles($globpath)
     {
@@ -73,6 +74,7 @@ class Path {
      * @param string $path
      * @return string
      */
+    /*
     static function noEndSep(string $path) {
         $sep = substr($path, -1);
         if ($sep == "\\" || $sep == '/') {
@@ -80,7 +82,8 @@ class Path {
             return ($sep == DS) ? $result : self::native($result);
         }
         return $path;
-    }
+    }*/
+    
     /**
      * 
      * @param type $config

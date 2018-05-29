@@ -10,6 +10,7 @@
     "jquery": "^3.2.1",
     "jquery-form": "^4.2.2",
     "masonry-layout": "^4.2.0",
+    "salvattore": "^1.0.9",
     "summernote": "^0.8.8"
   }
 }

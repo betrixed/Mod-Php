@@ -45,6 +45,10 @@ controller = 'article'
 module = 'page'
 
 [[_pattern]]
+match = '/page_admin/links/{action}'
+paths = { action=1, module='page', controller='links'}
+
+[[_pattern]]
 match = '/page_admin/meta/{action}'
 paths = { action=1, module='page', controller = 'meta'}
 

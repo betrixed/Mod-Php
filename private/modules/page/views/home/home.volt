@@ -1,9 +1,31 @@
 {% include "partials/facebook.volt" %}
 {% if linkrowsct > 0 %}
 <style>
-.column *{ padding: 5px; }
+@media screen and (max-width: 800px){
+    #grid[data-columns]::before {
+        content: '3 .column.size-1of1';
+    }
+}
+
+@media screen and (min-width: 801px) and (max-width: 1200px) {
+	#grid[data-columns]::before {
+		content: '2 .column.size-1of2';
+	}
+}
+@media screen and (min-width: 1201px) {
+	#grid[data-columns]::before {
+		content: '3 .column.size-1of3';
+	}
+}
+
+.column { float:left; }
+.size-1of1 { width: 100%; }
+.size-1of2 { width: 50%; }
+.size-1of3 { width: 33.333%; }
+
 </style>
-<div id="mygrid">
+
+<div id="grid" data-columns>
  
     {% for link in linkrows %}
     <?php
@@ -40,56 +62,11 @@
 </div>
 
 {% if isMobile == false %}
-<script type="text/javascript">
-    
-var $container;
-var minit = false;
 
-function calcColSize(){
-   if (!minit) return;
-   var mincol = 531;
-   var w = $('#content').width();
-
-
-   var columns = Math.floor(w / mincol);
-   if (columns == 0)
-       return;
-   var wcol = Math.floor(w/(columns)) + (columns+1)*(columns+1) - (columns*8) - 5;
-
-   if (w > mincol)
-   {
-        $(".mitem").each(function(index, element){  
-            $(element).outerWidth(wcol+1);
-        });
-        $container.masonry( 'option', { columnWidth: wcol });
-        //$('#msize').text('  size ' + columns + ' ' + wcol + ' ' + w);
-   }
-}
-
-function readyFn() {
-    // important class mgrid does not identify actual div
-    $container = $('.mgrid');
-    $container.imagesLoaded( function() {
-        $container.masonry({
-         itemSelector: '.mitem',
-         columnWidth: 531,
-         initLayout: false
-        });
-    });
-    minit = true;
-    calcColSize();
-}
-//window.onload = readyFn;
-$(document).ready()
-{
-    readyFn();
-    
-}
-$(window).resize(calcColSize);
-
-</script>
 {% endif %}
 {% endif %}
+
+<script type="text/javascript" src="/assets/node_modules/salvattore/dist/salvattore.min.js"></script>
 
 
 
