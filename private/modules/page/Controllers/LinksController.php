@@ -88,17 +88,15 @@ class LinksController extends \Phalcon\Mvc\Controller {
         $this->buildAssets();
         $this->editAssets();
         $req = $this->request;
-        $this->view->pick('links/edit');
+        $this->pickView('edit');
         if (!$req->isPost())
         {
-           
- 
+            $view = $this->view;
+            $view->linkid = 0;
+            $view->title = 'New link';
             
-            $this->view->linkid = 0;
-            $this->view->title = 'New link';
-            
-            $this->view->linkform = new LinkForm();
-            $this->view->refid = 0;
+            $view->linkform = new LinkForm();
+            $view->refid = 0;
                 
             return;
         }
@@ -128,8 +126,8 @@ class LinksController extends \Phalcon\Mvc\Controller {
         $this->buildAssets();
         $this->editAssets();
         $req = $this->request;
-        $this->pickView('links/edit');
-    
+        $this->pickView('edit');
+        $view = $this->view;
         if ($req->isPost()) {
             $linkid = $req->getPost('id', 'int'); //replace id with link id
             if (isset($linkid) && ($linkid > 0)) {
@@ -141,8 +139,8 @@ class LinksController extends \Phalcon\Mvc\Controller {
                 $link->refid = $id; // from blog id
                 $this->createFromPost($link);
                 $myform = new LinkForm($link);
-                $this->view->linkform = $myform;
-                $this->view->refid = null;
+                $view->linkform = $myform;
+                $view->refid = null;
             }
         } else {
             /* find or create */
@@ -166,8 +164,8 @@ class LinksController extends \Phalcon\Mvc\Controller {
                     $elements['summary']->setDefault($text);
                 }
                 /* setup new form */
-                $this->view->refid = $id;
-                $this->view->linkform = $myform;
+                $view->refid = $id;
+                $view->linkform = $myform;
             } else {
                 // no blog to work with, what are we doing here?
                 $this->response->redirect($this->myController ."new");
@@ -202,9 +200,10 @@ class LinksController extends \Phalcon\Mvc\Controller {
         $form = new LinkForm();
         $req = $this->request;
         $post = $this->request->getPost();
-        $this->view->linkform = $form;
-        $this->view->linkid = 0;
-        $this->view->refid = 0;
+        $view = $this->view;
+        $view->linkform = $form;
+        $view->linkid = 0;
+        $view->refid = 0;
         if ($form->isValid($post)) {
             // update the record
             $link = new Links();
@@ -213,7 +212,7 @@ class LinksController extends \Phalcon\Mvc\Controller {
             $link->date_created = date('Y-m-d H:i:s');
             $link->enabled = 1;
             if ($this->createFromPost($link)){
-                $this->view->disable();
+                $view->disable();
                 $this->response->redirect($this->myController . "edit/" . $link->id);
                 return false;
             }
@@ -278,9 +277,10 @@ class LinksController extends \Phalcon\Mvc\Controller {
             if ($link->update()) {
                 $this->flash->success("Link was updated successfully");
                 $form = new LinkForm($link);
-                $this->view->linkform = $form;
-                $this->view->linkid = $id;
-                $this->view->refid = $link->refid;
+                $view = $this->view;
+                $view->linkform = $form;
+                $view->linkid = $id;
+                $view->refid = $link->refid;
             }
         }
     }
@@ -289,9 +289,10 @@ class LinksController extends \Phalcon\Mvc\Controller {
     public function editAction($id) {
         $this->buildAssets();
         $this->editAssets();
-
-        $this->view->linkid = $id;
-        $this->view->title = 'Edit link '. $id;
+        $view = $this->view;
+        $this->pickView('edit');
+        $view->linkid = $id;
+        $view->title = 'Edit link '. $id;
         if ($this->request->isPost()) {
             try {
                 $this->updatePost($id);
@@ -302,8 +303,8 @@ class LinksController extends \Phalcon\Mvc\Controller {
             $link = Links::findFirst($id);
             if ($link) {
                 $form = new LinkForm($link);
-                $this->view->refid = $link->refid;
-                $this->view->linkform = $form;
+                $view->refid = $link->refid;
+                $view->linkform = $form;
             }
         }
     }

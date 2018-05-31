@@ -82,13 +82,15 @@ class Elements extends Component {
             $this::outputClass($class);
         }
         echo ">";
-        $link = (!empty($menu->controller)) ? $menu->controller : '';
+        $hasController = !empty($menu->controller);
+        $link = ($hasController) ? $menu->controller : '';
+        $link = '/' . $link;
         if (!empty($menu->action)) {
-            if (strlen($link) > 0)
+            if ($hasController)
             {
                 $link .= '/';
             }
-            $link = '/' . $link . $menu->action;
+            $link .= $menu->action;
         }
         if (strlen($link) > 0) {
             echo $this->tag->linkTo($link, $menu->caption);

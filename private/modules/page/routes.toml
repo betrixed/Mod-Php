@@ -44,9 +44,22 @@ action = 'byTitle'
 controller = 'article'
 module = 'page'
 
+
+[[_pattern]]
+match = '/page_admin/category/{action}'
+paths = { action=1, module='page', controller='category'}
+
+[[_pattern]]
+match = '/page_admin/category/{action}/{id}'
+paths = { action=1, id=2, module='page', controller='category'}
+
 [[_pattern]]
 match = '/page_admin/links/{action}'
 paths = { action=1, module='page', controller='links'}
+
+[[_pattern]]
+match = '/page_admin/links/{action}/{id}'
+paths = { action=1, id=2, module='page', controller = 'links'}
 
 [[_pattern]]
 match = '/page_admin/meta/{action}'

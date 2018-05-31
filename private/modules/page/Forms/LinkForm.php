@@ -5,19 +5,14 @@
  */
 namespace Page\Forms;
 
-use Pcan\Forms\NiftyForm;
-
-use Phalcon\Forms\Form;
 use Phalcon\Forms\Element\Text;
 use Phalcon\Forms\Element\Hidden;
 use Phalcon\Forms\Element\Select;
 use Phalcon\Forms\Element\TextArea;
-use Phalcon\Forms\Element\Check;
-use Phalcon\Forms\Element\Date;
+
 use Phalcon\Validation\Validator\PresenceOf;
-use Phalcon\Validation\Validator\StringLength;
-use Phalcon\Validation\Validator\Confirmation;
-use Phalcon\Mvc\Model\Validator\Url as UrlValidator;
+use Mod\Forms\NiftyForm;
+
 
 class LinkForm extends NiftyForm 
 {
