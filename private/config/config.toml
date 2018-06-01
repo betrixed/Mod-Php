@@ -2,7 +2,7 @@
 
 configType = "module"
 
-defaultModule = "page"
+defaultModule = "page_admin"
 modulesDir = '${PHP_DIR}/modules'
 modulesBootstrap = 'mod_bootstrap.php'
 timezone = 'Australia/Sydney'
@@ -20,7 +20,7 @@ metaDir = '${PHP_DIR}/cache/metadata'
 alias='test'
 id = 'secure'
 article='page'
-page_admin='page'
+page='page_admin'
 
 [module_data.modtools]
 dir = '${PHP_DIR}/vendor/phalcon/devtools/scripts/Phalcon/Web/ModTools'
@@ -35,7 +35,7 @@ namespace = 'Secure'
 bootstrap = 'secure_bootstrap.php'
 services = ['acl']
 
-[module_data.page]
+[module_data.page_admin]
 dir = '${PHP_DIR}/modules/page'
 namespace = 'Page'
 bootstrap = '${PHP_DIR}/Mod/mod_bootstrap.php'
@@ -51,7 +51,7 @@ bootstrap = 'admin_bootstrap.php'
 
 # Intercept particular URI and map-forward them to other requests
 [urlmap.home]
-controller="page/home"
+controller="page_admin/home"
 action="index"
 caption="Home"
 class=''

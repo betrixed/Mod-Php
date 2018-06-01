@@ -27,9 +27,9 @@
     <?php foreach ($page->items as $meta) { ?>
         <tr>
             <td>{{ meta.id }}</td>
-            <td style="text-align:left"><?php echo $this->tag->linkTo(array("admin/meta/edit?id=" . $meta->id, $meta->meta_name)); ?></td>
+            <td style="text-align:left">{{ link_to(myController ~ "edit?id=" ~ meta.id, meta.meta_name) }}</td>
             <td><?php echo htmlentities($meta->template); ?></td>
-            <td><?php echo $meta->data_limit; ?></td>
+            <td><{{ meta.data_limit }}</td>
             <td><?php 
                 $howset = isset($meta->display) && $meta->display==1 ? "Shown" : "Hidden";
                 echo $howset;

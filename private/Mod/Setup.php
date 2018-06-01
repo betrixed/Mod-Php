@@ -126,5 +126,13 @@ class Setup {
                     ["metaDataDir" => $metaDir]
             );
         });
+        
+        $di->set('flash', function(){
+            return new \Phalcon\Flash\Session([
+            'error' => 'alert alert-error',
+            'success' => 'alert alert-success',
+            'notice' => 'alert alert-info',
+        ]);
+    });
     }
 }

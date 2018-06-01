@@ -17,7 +17,9 @@ class ArtcatController extends \Phalcon\Mvc\Controller {
         $elements->addAsset('bootstrap');
         
     }
-    
+    public function initialize() {
+        $this->view->setTemplateBefore('id');
+    }
     public function indexAction($catclean)
     {
         $this->buildAssets();

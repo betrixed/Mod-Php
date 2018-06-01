@@ -15,7 +15,7 @@
     $isEditor = $myview->isEditor;
     $user_id = $myview->userId;
     $catItems = $myview->catItems;
-    $burl = "/page/edit/";
+    $burl = "/page_admin/edit/";
 
     if ($myview->catId > 0)
     {

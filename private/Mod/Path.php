@@ -25,9 +25,9 @@ class Path extends CPath {
      * @return string
      */
     
-    static function startsWith($target, $with) {
-        return (substr($target,0, strlen($with)) === $with);
-    }
+    //static function startsWith($target, $with) {
+    //    return (substr($target,0, strlen($with)) === $with);
+    //}
     /*static function native(string $path) {
         if (DS == '/') {
             $result = str_replace("\\", DS, $path);

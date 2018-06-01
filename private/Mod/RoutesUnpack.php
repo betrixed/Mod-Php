@@ -230,6 +230,8 @@ class RoutesUnpack {
     }
     
     public function patternTable($patterns) {
+        $modulePrefix = '/' . $this->moduleName;
+        $lenPrefix = strlen($modulePrefix);
         foreach($patterns as $idx => $table) {
             $match = '';
             $action = '';
@@ -238,14 +240,17 @@ class RoutesUnpack {
             $methods = null;
             $paths = [];
             
+            
             foreach($table as $key => $value) {
-                
                 switch($key) {
                 case 'paths':
                     $paths = $value;
                     break;
                 case 'match':
                     $match = $value;
+                    if (Path::startsWith($match , $modulePrefix)) {
+                        $match = substr($match, $lenPrefix);
+                    }
                     break;
                 case 'controller':
                     $paths['controller'] = $value;

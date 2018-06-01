@@ -20,9 +20,8 @@ class CacheController extends \Phalcon\Mvc\Controller {
     {
         //$this->pickView('dashboard/index');
         $this->flash->success( $msg );
-        $dispatcher = $this->di->get('dispatcher');
-        $dispatcher->forward(['controller' => 'dashboard',
-                                    'action' => 'index']);
+        //$dispatcher = $this->di->get('dispatcher');
+        $this->response->redirect('/dashboard');
     }
     
     protected function doEachModule($modfn) {

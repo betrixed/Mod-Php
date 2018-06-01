@@ -1,6 +1,6 @@
 <?php
 
-namespace Pcan\Models;
+namespace Page\Models;
 
 class Meta extends \Phalcon\Mvc\Model
 {

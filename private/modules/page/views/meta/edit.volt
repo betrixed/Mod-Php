@@ -1,5 +1,5 @@
 {{ content() }}
-{{ link_to('admin/meta/index', 'List metadata', 'class':'btn btn-success') }}
+{{ link_to(myController ~ 'index', 'List metadata', 'class':'btn btn-success') }}
 <form method="post" autocomplete="off">
 
 

@@ -90,7 +90,7 @@ class MetaController extends \Phalcon\Mvc\Controller {
         }
         $meta = Meta::findFirstById($id);
         $view = $this->view;
-        $this->setView( 'edit');
+        $this->setView( 'edit' );
         $view->form = new MetaForm($meta,null); 
         $view->metaId = $id;
         

@@ -1,29 +1,24 @@
 [_default]
 controller = 'home'
 action = 'index'
-mode='page'
+module='page_admin'
 
-[edit.index]
-methods = ['GET']
 
 # Can't put module in match if its default module!
 [[_pattern]]
 match = '/gallery/:action'
 controller = 'gallery'
 action = 1
-module = 'page'
+module = 'page_admin'
 
 [[_pattern]]
 match = '/gallery/view/{name}'
 controller = 'gallery'
 action = 'view'
-module = 'page'
+module = 'page_admin'
 
 [edit.categorytick]
 methods = ['POST']
-
-[edit.new]
-methods = ['GET','POST']
 
 [edit.note]
 methods = ['GET','POST']
@@ -42,8 +37,11 @@ methods = ['GET']
 match = '/article/{name}'
 action = 'byTitle'
 controller = 'article'
-module = 'page'
+module = 'page_admin'
 
+[[_pattern]]
+match = '/page_admin/edit/{action}'
+paths = { action=1, module='page', controller='edit'}
 
 [[_pattern]]
 match = '/page_admin/category/{action}'
@@ -78,7 +76,6 @@ methods = ['GET']
 
 [cat]
 controller = 'artcat'
-
 
 [cat._actions]
 index = 'index/{catclean}'

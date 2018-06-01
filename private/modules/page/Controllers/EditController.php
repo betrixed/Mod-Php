@@ -31,8 +31,8 @@ class EditController extends \Phalcon\Mvc\Controller {
     {
         $view = $this->view;
         $this->ctx->pickView($view, 'edit/' . $pick);
-        $view->myModule = "/page/";
-        $view->myController = "/page/edit/";
+        $view->myModule = "/page_admin/";
+        $view->myController = "/page_admin/edit/";
     }
     protected function buildAssets()
     {
