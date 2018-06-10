@@ -18,10 +18,9 @@ class HomeController extends \Phalcon\Mvc\Controller
         $elements = $this->elements;
         $elements->addAsset('bootstrap');
         //$elements->addAsset('salvattore');
-        $mod = $this->mod;
-        if ($mod->exists('css')) {
-            $elements->moduleCssList($mod->css->toArray(), $mod->name);
-        }
+
+        $elements->moduleCssList(['novosti.css','sbo.css'], 'page');
+
     }
     public function initialize()
     {

@@ -25,13 +25,21 @@ class Elements extends Component {
     private $web;
     private $config;
     
+    
     public function __construct()
     {
         $this->config = $this->di->get('config');
         $this->web = Path::endSep($this->config->webDir);
         
-        $this->assetSrc = "/assets/";
-        $this->assetProd = "file/";
+        $this->assetSrc = Path::endSep($this->config->assetSrc);
+        $this->assetProd = Path::endSep($this->config->assetCache);
+    }
+    
+    public function getWebDir() : string {
+        return $this->web;
+    }
+    public function getAssetCache() : string {
+        return $this->assetProd;
     }
     
     static function dropDownSub($name) {
@@ -355,6 +363,7 @@ class Elements extends Component {
             $this->addAsset($name);
         }
     }
+
     public function addAsset($name) {
         $cfg = $this->di->get('config');
         $path = $cfg->configDir . "/assets/" . $name . ".php";
@@ -363,22 +372,22 @@ class Elements extends Component {
             $this->addAssetArray($data);
         }
     }
-    
-    public function moduleCssList($cssList, $modName) {
-        $cssFileName = $modName . ".css";
+    /**
+     * 
+     * @param array $cssList list of css filenames,
+     * file paths to be appended to module/css/
+     * files are to be concatenated into target.css
+     * @param string $targetCss target css
+     */
+    public function moduleCssList($cssList, $targetCss) {
+        $cssFileName = $targetCss . ".css";
         if (count($cssList) > 0)
         {
-            $prefix = 'css/';
-
             $assets = ['targetCss' => $cssFileName, 'name' => $modName];
 
-            $list = [];
-            foreach($cssList as $cssFile)
-            {
-                $list[] = $prefix . $cssFile;
-            }
-            $assets['css'] = $list;
-            $this->addAssetArray($assets, "assets/module/");
+            $assets['css'] = $cssList;
+            
+            $this->addAssetArray($assets, "assets/module/css/");
         }
     }
     
@@ -386,7 +395,7 @@ class Elements extends Component {
     {
         if (is_null($assetSrc))
         {
-            $assetSrc = $this->assetSrc;
+            $assetSrc = $this->web . $this->assetSrc;
         }
         if (array_key_exists('targetJs', $assets))
         {

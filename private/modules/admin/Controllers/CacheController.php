@@ -66,7 +66,9 @@ class CacheController extends \Phalcon\Mvc\Controller {
     
     protected function clearAssetCache()
     {
-        $baseDir = Path::$config->webDir . DS . Path::$config->assetJoin;
+        $elements = $this->elements;
+        
+        $baseDir = $elements->getWebDir() . $elements->getAssetCache();
         
         Path::deleteAllFiles($baseDir . "js/*.js");
         Path::deleteAllFiles($baseDir . "css/*.css");

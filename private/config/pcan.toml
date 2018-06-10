@@ -1,7 +1,5 @@
 noSSL = false
 implicitViews = true
-assetJoin = 'assets/prod/'
-assetSrc = 'assets/src/'
 pcanDir = '${PHP_DIR}'
 timezone = 'Australia/Sydney'
 domainName = 'mrxyz.test'

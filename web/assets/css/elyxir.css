@@ -1438,16 +1438,3 @@ div.successMessage, div.noticeMessage, div.errorMessage{
     border-style:solid;
     
 }
-
-div.mgrid {
-    overflow-x: hidden !important;
-}
-
-.mgrid-sizer { width: 240px;}
-
-
-.mgrid-sizer {
-    min-height:10px;
-    background-color: green;
-} 
-

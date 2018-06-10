@@ -1,19 +1,20 @@
 {% include "partials/facebook.volt" %}
+
 {% if linkrowsct > 0 %}
 <style>
-@media screen and (max-width: 800px){
-    #grid[data-columns]::before {
+@media screen and (max-width: 900px){
+    #mgrid[data-columns]::before {
         content: '3 .column.size-1of1';
     }
 }
 
-@media screen and (min-width: 801px) and (max-width: 1200px) {
-	#grid[data-columns]::before {
+@media screen and (min-width: 901px) and (max-width: 1300px) {
+	#mgrid[data-columns]::before {
 		content: '2 .column.size-1of2';
 	}
 }
-@media screen and (min-width: 1201px) {
-	#grid[data-columns]::before {
+@media screen and (min-width: 1301px) {
+	#mgrid[data-columns]::before {
 		content: '3 .column.size-1of3';
 	}
 }
@@ -25,7 +26,7 @@
 
 </style>
 
-<div id="grid" data-columns>
+<div id="mgrid" data-columns>
  
     {% for link in linkrows %}
     <?php
