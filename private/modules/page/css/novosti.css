@@ -1,0 +1,124 @@
+
+/* 
+    Created on : 08/08/2017, 1:16:05 PM
+    Author     : michael
+*/
+div.novosti {
+    padding : 20px;
+    background-color: antiquewhite;
+    font-size: 18px;
+    font-family:Tahoma, Verdana, Arial, sans-serif;
+}
+
+div.novosti_p {
+	border-width:5px;
+	border-color:lightgrey;
+	border-style:solid;
+	padding: 10px;
+}
+
+div.novosti blockquote {
+  background: #f9f9f9;
+  border-left: 10px solid #ccc;
+  margin: 1.5em 10px;
+  padding: 0.5em 10px;
+  quotes: "\201C""\201D""\2018""\2019";
+}
+div.novosti blockquote:before {
+  color: #ccc;
+  content: open-quote;
+  font-size: 4em;
+  line-height: 0.1em;
+  margin-right: 0.25em;
+  vertical-align: -0.4em;
+}
+div.novosti blockquote p {
+  display: inline;
+}
+
+div.novosti h2 {
+    font-size:1.8em;
+    color: brown;
+    font-style: oblique;
+    font-weight:bolder;
+    text-align:center;
+}
+div.novosti h3 {
+    font-size:1.4em;
+    color: darkblue;
+    font-weight:bold;
+}
+div.novosti_next {
+	border-width:5px;
+	border-color:#fdb934;
+	border-style:double;
+	text-align:center;
+	background:#fddda0;
+}
+div.novosti p.bigger {
+	font-size:1.3em;
+        color: white;
+}
+div.novosti p.biggest{
+	font-weight:bold;
+	font-size:1.8em;
+        color: white;
+}
+
+div.novosti span.n_title {
+	font-size:1.5em;
+	font-weight:bold;
+        color: darkred;
+}
+div.novosti .novosti_p p {
+	padding:10px 10px;
+	width: 95%;
+}
+
+div.novosti .novosti_p img {
+	padding:10px 10px;
+	width: 95%;
+}
+div.novosti div.novosti_head {
+	display:inline-block;
+	background-color:#000;
+	border-width:5px;
+	border-color:#000;
+	border-style:solid;
+	padding: 5px;
+        vertical-align:bottom;
+}
+
+div.novosti .novosti_head img {
+	width:50%;
+	float:left;
+
+}
+
+div.novosti figure {
+	outline-color:lightgrey;
+	outline-width:1px;
+	border-width : 5px;
+	padding : 5px;
+}
+div.novosti figcaption {
+	background-color:lightgrey;
+	padding-left: 5px;
+}
+
+div.novosti figure img {
+	padding:0;
+}
+
+div.novosti .novosti_edition {
+        padding-top:10px;
+	text-align:center;
+	width:24%;
+	line-height:1.0em;
+	float:right;
+	background-color:#000;
+	font-family:Tahoma, Verdana, Arial, sans-serif;
+	color:#fff;
+	padding-left:0.5%;
+	padding-right:0.5%;
+}
