@@ -383,7 +383,7 @@ class Elements extends Component {
         $cssFileName = $targetCss . ".css";
         if (count($cssList) > 0)
         {
-            $assets = ['targetCss' => $cssFileName, 'name' => $modName];
+            $assets = ['targetCss' => $cssFileName, 'name' => $targetCss];
 
             $assets['css'] = $cssList;
             

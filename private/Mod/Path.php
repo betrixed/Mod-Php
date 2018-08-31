@@ -150,13 +150,27 @@ class Path extends CPath {
     static function getConfig($path)  {
         $pinfo = pathinfo($path);
         $ext = $pinfo['extension'];
-        switch ($ext) {
-            case 'toml':
-                // toml parsing is a time penalty, try and fix it
-                
-                $cachePath = Path::endSep(self::$config->configCache) . 
+        $cachePath = Path::endSep(self::$config->configCache) . 
                         str_replace([DS,':'],'_',$pinfo['dirname']) .
                         '-' . $pinfo['filename'] . '.ktc';
+        
+        switch ($ext) {
+            case 'xml' :
+                if (file_exists($cachePath) && (filemtime($cachePath) > filemtime($path))) {
+                    $result = unserialize(file_get_contents($cachePath));
+                } else {
+                    if (!file_exists($path)) {
+                        throw new \Exception("File not found: " . $path);
+                    }
+                    $result = (new \Mod\Toml\XmlToml())->parseFile($path);              
+                    Path::replaceDefines($result);
+                    file_put_contents($cachePath, serialize($result));
+                }
+                
+                break;
+            case 'toml':
+                // toml parsing is a time penalty, try and fix it         
+                
                 if (file_exists($cachePath) && (filemtime($cachePath) > filemtime($path))) {
                     $result = unserialize(file_get_contents($cachePath));
                 }

@@ -24,6 +24,9 @@ methods = ['POST']
 methods = ['GET','POST']
 pattern = 'blog/{id}'
 
+[contact.index]
+methods = ['GET','POST']
+
 [home.index]
 methods = ['GET']
 
@@ -70,6 +73,8 @@ paths = { action=1, module='page', controller = 'admingallery'}
 [[_pattern]]
 match = '/page_admin/gallery/{action}/{name}'
 paths = { action=1, name=2, module='page', controller = 'admingallery'}
+
+
 
 [refer.index]
 methods = ['GET']

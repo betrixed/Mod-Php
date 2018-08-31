@@ -570,7 +570,8 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
                 ])->register();
                
                // make a new instance of Module
-                $module = new  $smod->className();
+                $className =  $smod->className;
+                $module = new  $className();
                 $module->registerAutoloaders($di);
                 $module->registerServices($di);
             
@@ -583,6 +584,7 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
             if ('/' . $key === $this->initialURI) {
         // see if the URL is a mapped keyword in config['urlmap']
                  $config = $this->config;
+                 $test = $config->toArray();
                  if ($config->exists('urlmap')) {
                      $config = $config['urlmap'];
                      if ($config->exists($key)) {

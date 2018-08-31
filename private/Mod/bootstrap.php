@@ -32,10 +32,10 @@ $gPaths = [
 ];
 
 Path::$config = new \Pun\KeyTable($gPaths);
-Path::mergeConfigFile(Path::$config, $gPaths['configDir'] . '/config.toml');
+Path::mergeConfigFile(Path::$config, $gPaths['configDir'] . '/config.xml');
 
-if (Path::$config->offline) {
-    echo "Sorry, this service is offline.";
+if (Path::$config['offline']) {
+    echo "Sorry, this service is offline. [" . Path::$config['offline'] . "]";
     return;
 }
 
