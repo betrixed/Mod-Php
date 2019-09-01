@@ -6,7 +6,6 @@
  * and switches to the configured type for next step.
  * @author Michael Rynn
  */
-
 namespace Mod;
 
 (new \Phalcon\Loader())->registerNamespaces(
@@ -23,7 +22,7 @@ define('DATETIME_FORMAT', 'Y-m-d H:i:s');
 define('DEV_VERSION', '1.0');
 
 
-$gPaths = [
+$gConfig = [
     'phpDir' => PHP_DIR,
     'cacheDir' => PHP_DIR . '/cache',
     'webDir' => WEB_ROOT,
@@ -31,18 +30,20 @@ $gPaths = [
     'configCache' => PHP_DIR . '/cache/config'
 ];
 
-Path::$config = new \Pun\KeyTable($gPaths);
-Path::mergeConfigFile(Path::$config, $gPaths['configDir'] . '/config.toml');
 
-if (Path::$config->offline) {
-    echo "Sorry, this service is offline.";
+Path::$config = new \Phalcon\Config($gConfig,false);
+
+Path::$config->merge(Path::getConfig($gConfig['configDir'] . '/config.xml'));
+
+if (Path::$config['offline']) {
+    echo ("Sorry, this service is offline.");
     return;
 }
 
-try {
-    switch (Path::$config->configType) {
-        case 'module' :
 
+try {
+    switch (Path::$config['configType']) {
+        case 'module' :
         default :
             $ctx = new Context();
             $mod_strap = $ctx->init(Path::$config);  

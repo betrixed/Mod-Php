@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tb>
+    <s k='host'>localhost</s>
+    <s k='username'>mrDb913e</s>
+    <s k='password'>4829gh1AKsu077faMZ</s>
+    <s k='dbname'>mrxyz</s>
+    <s k='adapter'>Mysql</s>
+    <s k='charset'>utf8</s>
+</tb>

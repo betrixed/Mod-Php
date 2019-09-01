@@ -14,9 +14,8 @@ use Phalcon\Mvc\Dispatcher as MvcDispatcher;
 use Phalcon\Di\FactoryDefault;
 use Phalcon\Mvc\View\Engine\Volt as VoltEngine;
 use Phalcon\Mvc\View;
-
+use Phalcon\Config;
 use Phalcon\Mvc\Router;
-Use Pun\TomlReader as TomlParser;
 
 use Phalcon\Logger\Adapter\File as Logger;
 use Phalcon\Logger\Formatter\Line as LineFormatter;
@@ -53,7 +52,7 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
      * @param \Phalcon\DiInterface $di
      */
 
-    public function setDI(\Phalcon\DiInterface $di) {
+    public function setDI(\Phalcon\Di\DiInterface $di) {
         $this->di = $di;
     }
 
@@ -61,7 +60,7 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
      * 
      * @return \Phalcon\DiInterface
      */
-    public function getDI() {
+    public function getDI() : \Phalcon\Di\DiInterface {
         return $this->di;
     }
     /** 
@@ -363,35 +362,40 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         return Path::noEndSep($defaultDir);
    
     }
+    
+    
     private function dynamicConfig($mod, $name) {
+        
+        Path::replaceDefines($mod);
         $mod->name = $name;
-        if (!isset($mod->namespace)) {
+        
+        if (!isset($mod['namespace'])) {
             throw new \Exception('module_data.' . $name . ' needs namespace value');
         }
         
-        if (!isset($mod->dir)) {
-            $mod->dir = $this->getDefaultModulesDir() . DS . $name;
+        if (!isset($mod['dir'])) {
+            $mod['dir'] = $this->getDefaultModulesDir() . DS . $name;
         }
         else {
-            $mod->dir = Path::noEndSep($mod->dir);
+            $mod['dir'] = Path::noEndSep($mod['dir']);
         }
         
-        if (!$mod->exists('path')) {
-            $mod->path = $mod->dir . '/Module.php';
+        if (!isset($mod['path'])) {
+            $mod['path'] = $mod['dir'] . '/Module.php';
         }
          
-        if (!$mod->exists('className')) {
-            $mod->className = $mod->namespace . '\Module';
+        if (!isset($mod['className'])) {
+            $mod['className'] = $mod['namespace'] . '\Module';
         }
         
-        if (!isset($mod->enabled)) {
-            $mod->enabled = true;
+        if (!isset($mod['enabled'])) {
+            $mod['enabled'] = true;
         }
-        $cacheDir = Path::noEndSep($this->config->cacheDir);
+        $cacheDir = Path::noEndSep($this->config['cacheDir']);
         // view service configuation gets paths with separator ends
-        $mod->voltCache = $cacheDir . DS . 'volt_' . $name . DS;
-        $mod->htmlCache = $cacheDir . DS . 'html_' . $name . DS;
-        $mod->viewsDir = $mod->dir . DS . 'views' . DS;
+        $mod['voltCache'] = $cacheDir . DS . 'volt_' . $name . DS;
+        $mod['htmlCache'] = $cacheDir . DS . 'html_' . $name . DS;
+        $mod['viewsDir'] = $mod['dir'] . DS . 'views' . DS;
     }
 
     /**
@@ -505,8 +509,8 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         $di->setShared('ctx', $this);
 
         
-        if ($this->config->logErrors) {
-            $this->loggerService($this->config->errorLog);
+        if ($this->config['logErrors']) {
+            $this->loggerService($this->config['errorLog']);
         }
 
         return $di;
@@ -531,13 +535,13 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
             } else {
                 $realName = $alias;
             }
-            if (!($myConfig instanceof \Mergeable) && !($myConfig instanceof \Phalcon\Config)) {
+            if (!($myConfig instanceof \Phalcon\Config)) {
                 throw new \Exception("Module configuration not found: $alias");
             }
             $this->dynamicConfig($myConfig, $realName);
             $this->modules[$alias] = $myConfig;
-            $myConfig->alias = $alias;
-            $myConfig->isDefaultModule = ($alias == $this->config->defaultModule) ? true : false;
+            $myConfig['alias'] = $alias;
+            $myConfig['isDefaultModule'] = ($alias == $this->config['defaultModule']) ? true : false;
             return $myConfig;
         }
         return null;
@@ -545,35 +549,46 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
     
     public function init($config) {
         $this->config = $config;
-        date_default_timezone_set($config->timezone);
+        date_default_timezone_set($config['timezone']);
         
-        $config->phpVersion = phpversion();
-        $config->phalconVersion = phpversion('phalcon');
+        $config['phpVersion'] = phpversion();
+        $config['phalconVersion'] = phpversion('phalcon');
         
         $di = $this->initServices(); // setup di, and shared
         // Share the modules config
-        $di->setShared('modules', $config->module_data);
+        $di->setShared('modules', $config['module_data']);
          //
         // Phalcon\Config objects are sort of iterable  
         $this->allModules = [];
-        $module_data = $config->module_data;
+        $module_data = $config['module_data'];
+        $alias = [];
+        
         foreach ($module_data as $modName => $moduleConfig) {
-            $this->allModules[$modName] = $moduleConfig;
-            if (isset($moduleConfig['services'])) {
-                // * must * have a Module.php containing 
-                //  static function {service}( $di )
-                // config with default name
-                $smod = $this->getModuleConfig($modName);
-                // activate its namespace
-               (new \Phalcon\Loader())->registerNamespaces([
-                     $smod->namespace => $smod->dir
-                ])->register();
-               
-               // make a new instance of Module
-                $module = new  $smod->className();
-                $module->registerAutoloaders($di);
-                $module->registerServices($di);
-            
+            if (is_a($moduleConfig,'\Phalcon\Config')) { 
+                $this->allModules[$modName] = $moduleConfig;
+                if (isset($moduleConfig['services'])) {
+                    // * must * have a Module.php containing 
+                    //  static function {service}( $di )
+                    // config with default name
+                    $smod = $this->getModuleConfig($modName);
+                    // activate its namespace
+                   (new \Phalcon\Loader())->registerNamespaces([
+                         $smod->namespace => $smod->dir
+                    ])->register();
+
+                   // make a new instance of Module
+                    $module = new  $smod->className();
+                    $module->registerAutoloaders($di);
+                    $module->registerServices($di);
+                }
+            }
+            else if (is_string($moduleConfig)) {
+                $alias[$modName] = $moduleConfig;
+            }
+        }
+        foreach($alias as $akey=>$value) {
+            if (isset($this->allModules[$value])) {
+                $this->allModules[$akey] = $this->allModules[$value];
             }
         }
 
@@ -583,9 +598,9 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
             if ('/' . $key === $this->initialURI) {
         // see if the URL is a mapped keyword in config['urlmap']
                  $config = $this->config;
-                 if ($config->exists('urlmap')) {
-                     $config = $config['urlmap'];
-                     if ($config->exists($key)) {
+                 if (isset($config['urlmap'])) {
+                     $config = &$config['urlmap'];
+                     if (isset($config[$key])) {
                          $item = $config[$key];
                          $url = '/' . $item->controller . '/' . $item->action;
                          $_GET['_url'] = $url;
@@ -597,7 +612,7 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         $this->uriModule = $key;
         $alias = (!empty($key) && isset($this->allModules[$key])) 
                 ? $key
-                : $config->defaultModule;
+                : $config['defaultModule'];
         $myConfig = $this->getModuleConfig($alias);
         // nearly good to go
         return $this->setActiveModule($myConfig);

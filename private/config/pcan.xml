@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tb>
+    <b k='noSSL'>false</b>
+    <b k='implicitViews'>true</b>
+    <s k='pcanDir'>${PHP_DIR}</s>
+    <s k='timezone'>Australia/Sydney</s>
+    <s k='domainName'>mrxyz.test</s>
+    <s k='publicUrl'>mrxyz.test</s>
+    <s k='shortName'>Michael Rynn</s>
+    <s k='logDir'>${PHP_DIR}/log</s>
+    <s k='errorLog'>${PHP_DIR}/log/error.log</s>
+    <s k='logo'>/image/gallery/site/logo.jpg</s>
+</tb>

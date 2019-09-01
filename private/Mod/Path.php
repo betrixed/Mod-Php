@@ -9,13 +9,11 @@
 
 namespace Mod;
 
-use Pun\TomlReader;
-use Pun\Preg;
-use Pun\Path as CPath;
+use Phalcon\Config;
 
 defined('DS') || define('DS', DIRECTORY_SEPARATOR);
 
-class Path extends CPath {
+class Path {
 
     static public $config; // global registry / config
     /**
@@ -25,17 +23,17 @@ class Path extends CPath {
      * @return string
      */
     
-    //static function startsWith($target, $with) {
-    //    return (substr($target,0, strlen($with)) === $with);
-    //}
-    /*static function native(string $path) {
+    static function startsWith($target, $with) {
+        return (substr($target,0, strlen($with)) === $with);
+    }
+    static function native(string $path) {
         if (DS == '/') {
             $result = str_replace("\\", DS, $path);
         } else {
             $result = str_replace('/', DS, $path);
         }
         return $result;
-    }*/
+    }
 
     /**
      * 
@@ -45,7 +43,7 @@ class Path extends CPath {
      * @param string $path
      * @return string
      */
-    /*static function endSep(string $path) {
+    static function endSep(string $path) {
         $sep = substr($path, -1);
         if ($sep !== DS) {
             if ($sep == "\\") {
@@ -61,7 +59,7 @@ class Path extends CPath {
         }
         return $path;
         
-    }*/
+    }
     
     static public function deleteAllFiles($globpath)
     {
@@ -74,7 +72,7 @@ class Path extends CPath {
      * @param string $path
      * @return string
      */
-    /*
+    
     static function noEndSep(string $path) {
         $sep = substr($path, -1);
         if ($sep == "\\" || $sep == '/') {
@@ -82,36 +80,27 @@ class Path extends CPath {
             return ($sep == DS) ? $result : self::native($result);
         }
         return $path;
-    }*/
+    }
     
     /**
      * 
      * @param type $config
      * @param type $path
      */
-    static public function mergeConfig($config, string $path) {
-        $merge = self::getConfig($path);
-        $config->merge($merge);
-    }
-    static function isMergeable($object) {
-        return is_object($object) && (($object instanceof Mergeable) 
-                                || ($object instanceof \Phalcon\Config)
-                                || ($object instanceof \Pun\KeyTable)
-                );
-    }
     
-    static function replaceKeyValues($table)
+    
+    static function replaceKeyValues(&$table)
     {
         foreach($table as $key => $value) {
             if (is_string($value)) {
                 $newValue = self::defineReplace($value);
                 if (!empty($newValue))
                 {
-                    $table->$key = $newValue;
+                    $table[$key] = $newValue;
                 }
             }
-            else if (is_object($value) && is_a($value, "Pun\\KeyTable")) {
-                \Mod\Path::replaceKeyValues($value);
+            else if (is_array($value)) {
+                static::replaceKeyValues($value);
             }
         }
     }
@@ -119,9 +108,20 @@ class Path extends CPath {
      * replace {DEFINE} on root values
      * @param Pun\KeyTable $config
      */
-    static function replaceDefines($config) {
-        if (is_a($config,"Pun\\KeyTable")) {
-            $config->replaceVars(get_defined_constants());
+    static function replaceDefines(\Phalcon\Config $config) {
+        $map = get_defined_constants();
+        foreach($config as $key => $value) {
+            if (is_string($value)) {
+                $matches = null;
+                if (preg_match('/\${(\w+)}/', $value, $matches)) {
+                    $r = str_replace($matches[0], $map[$matches[1]], $value);
+                    $config[$key] = $r;
+                }
+            }
+            elseif (is_a($value,'\Phalcon\Config'))
+            {
+                static::replaceDefines($value);
+            }
         }
     }
     static function valuesCallback($config, $valueCallback) {
@@ -142,7 +142,7 @@ class Path extends CPath {
     }
     /**
      * Return appropriate Phalcon\Config adapter for file path.
-     * Only the Toml adapter uses ReConfig.
+     * 
      * @param type $path
      * @return Toml|\Phalcon\Config\Yaml|Ini|\Phalcon\Config\Json|Xml
      * @throws \Exception
@@ -151,30 +151,12 @@ class Path extends CPath {
         $pinfo = pathinfo($path);
         $ext = $pinfo['extension'];
         switch ($ext) {
-            case 'toml':
-                // toml parsing is a time penalty, try and fix it
-                
-                $cachePath = Path::endSep(self::$config->configCache) . 
-                        str_replace([DS,':'],'_',$pinfo['dirname']) .
-                        '-' . $pinfo['filename'] . '.ktc';
-                if (file_exists($cachePath) && (filemtime($cachePath) > filemtime($path))) {
-                    $result = unserialize(file_get_contents($cachePath));
-                }
-                else {
-                    if (!file_exists($path)) {
-                        throw new \Exception("File not found: " . $path);
-                    }
-                    $result = (new TomlReader())->parseFile($path);
-                    Path::replaceDefines($result);
-                    file_put_contents($cachePath, serialize($result));
-                }
-                break;
             case 'php':
                 $obj = require $path;
                 if (is_array($obj)) {
-                    $result = new \Pun\KeyTable($obj);
+                    $result = new \Phalcon\Config($obj,false);
                 }
-                else if (is_object($obj)) {
+                else if (is_a($obj,'\Phalcon\Config')) {
                     $result = $obj;
                 }
                 break;
@@ -182,7 +164,7 @@ class Path extends CPath {
                 $result = new Ini($path);
                 break;
             case 'xml':
-                $result = new Xml($path);
+                $result = new \Phalcon\Config((new XmlArray)->parseFile($path),false);
                 break;
             case 'json':
                 $result = new Json($path);
@@ -194,8 +176,8 @@ class Path extends CPath {
                 $result = null;
                 break;
         }
-        if (!self::isMergeable($result)) {
-            throw new \Exception('Object not a Config instance ' . $path);
+        if (!empty($result)) {
+            static::replaceDefines($result);
         }
         return $result;
     }

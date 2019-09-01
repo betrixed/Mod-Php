@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tb>
+    <s k='configType'>module</s>
+    <s k='defaultModule'>page_admin</s>
+    <s k='modulesDir'>${PHP_DIR}/modules</s>
+    <s k='modulesBootstrap'>mod_bootstrap.php</s>
+    <s k='timezone'>Australia/Sydney</s>
+    <b k='logErrors'>true</b>
+    <s k='errorLog'>${PHP_DIR}/log/error.log</s>
+    <b k='offline'>false</b>
+    <tb k='loader'>
+        <s k='Pcan'>${PHP_DIR}/Pcan</s>
+    </tb>
+    <s k='metaDir'>${PHP_DIR}/cache/metadata</s>
+    <s k='assetCache'>file/cache</s>
+    <s k='assetSrc'>assets</s>
+    <tb k='module_data'>
+        <s k='alias'>test</s>
+        <s k='id'>secure</s>
+        <s k='article'>page</s>
+        <s k='page'>page_admin</s>
+        
+        <tb k='modtools'>
+            <s k='dir'>${PHP_DIR}/vendor/phalcon/devtools/scripts/Phalcon/Web/ModTools</s>
+            <s k='namespace'>ModTools</s>
+            <s k='bootstrap'>mod_bootstrap.php</s>
+            <s k='PTOOLSPATH'>${PHP_DIR}/vendor/phalcon/devtools</s>
+            <s k='BASE_PATH'>${ROOT_DIR}/private</s>
+        </tb>
+        <tb k='secure'>
+            <s k='dir'>${PHP_DIR}/modules/secure</s>
+            <s k='namespace'>Secure</s>
+            <s k='bootstrap'>secure_bootstrap.php</s>
+            <a k='services'>
+                <s>acl</s>
+            </a>
+        </tb>
+        <tb k='page_admin'>
+            <s k='dir'>${PHP_DIR}/modules/page</s>
+            <s k='namespace'>Page</s>
+            <s k='bootstrap'>${PHP_DIR}/Mod/mod_bootstrap.php</s>
+        </tb>
+        <tb k='app'>
+            <s k='dir'>${PHP_DIR}/modules/app</s>
+            <s k='namespace'>Mod\App</s>
+            <s k='bootstrap'>${PHP_DIR}/Mod/mod_bootstrap.php</s>
+        </tb>
+        <tb k='admin'>
+            <s k='bootstrap'>admin_bootstrap.php</s>
+            <s k='namespace'>Admin</s>
+        </tb>
+    </tb>
+    <tb k='urlmap'>
+        <tb k='home'>
+            <s k='controller'>page_admin/home</s>
+            <s k='action'>index</s>
+            <s k='caption'>Home</s>
+            <s k='class'></s>
+        </tb>
+        <tb k='logout'>
+            <s k='controller'>secure/id</s>
+            <s k='action'>end</s>
+            <s k='caption'>Log-Out</s>
+            <s k='class'></s>
+        </tb>
+        <tb k='dashboard'>
+            <s k='controller'>secure/dashboard</s>
+            <s k='action'>index</s>
+            <s k='caption'>Dashboard</s>
+            <s k='class'></s>
+        </tb>
+        <tb k='login'>
+            <s k='controller'>secure/id</s>
+            <s k='action'>index</s>
+            <s k='caption'>Log-in</s>
+            <s k='class'>cd-signin</s>
+        </tb>
+    </tb>
+    <tb k='application'>
+        <s k='modelsDir'>${APP_PATH}/models</s>
+        <s k='appDir'>${APP_PATH}</s>
+        <s k='controllersDir'>${APP_PATH}/Controllers</s>
+        <s k='migrationsDir'>${PHP_DIR}/setup/db</s>
+        <s k='viewsDir'>${APP_PATH}/views</s>
+        <s k='pluginsDir'>${APP_PATH}/plugins</s>
+        <s k='libraryDir'>${APP_PATH}/library</s>
+        <s k='cacheDir'>${PHP_DIR}/cache</s>
+    </tb>
+</tb>

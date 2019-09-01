@@ -248,8 +248,9 @@ div.mitem {
     font-size:1.2em;
     border: 1px solid hsla(0, 0%, 15%, 0.5);
     overflow-y:auto;
+    
     overflow-x:auto;
-    max-height:1200px;
+    //max-height:1200px;
     margin-bottom:10px;
     margin-left:10px;
     padding-right:10px;

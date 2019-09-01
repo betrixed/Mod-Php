@@ -3,7 +3,7 @@
 namespace Secure;
 
 use Secure\Plugins\Security;
-use Phalcon\DiInterface;
+use Phalcon\Di\DiInterface;
 use Phalcon\Mvc\ModuleDefinitionInterface;
 
 class Module implements ModuleDefinitionInterface

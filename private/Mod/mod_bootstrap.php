@@ -14,16 +14,16 @@ $mod = $ctx->activeModule;
             $mod->namespace => $mod->dir,
         ])
         ->register();
-
-Path::mergeConfigFile($mod, $mod->dir . '/mod_config.toml');
-
 $config = $ctx->config;
-$config['database'] = Path::getConfig( $config['configDir'] . '/database.toml');
-$config['pcan'] = Path::getConfig( $config['configDir'] . '/pcan.toml');
+Path::mergeConfigFile($mod, $mod->dir . '/mod_config.xml');
+
+
+$config['database'] = Path::getConfig( $config['configDir'] . '/database.xml');
+$config['pcan'] = Path::getConfig( $config['configDir'] . '/pcan.xml');
 
 $mod->viewsDir = [
     $mod->viewsDir,
-    PCAN_DIR . DS . 'views' . DS
+    $config['pcan']['pcanDir'] . DS . 'views' . DS
 ];
 
 $ctx->viewService();
