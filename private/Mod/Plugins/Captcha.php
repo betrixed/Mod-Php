@@ -3,7 +3,7 @@
 /*
 See the "licence.txt" file at the root "private" folder of this site
 */
-namespace Mod\Plugins;
+namespace Pcan\Google;
 
 class Captcha {
     

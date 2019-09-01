@@ -3,7 +3,7 @@ namespace Secure\Plugins;
 
 use Mod\Path;
 use Phalcon\Events\Event;
-use Phalcon\Mvc\User\Plugin;
+use Phalcon\Plugin;
 use Phalcon\Mvc\Dispatcher;
 
 use Phalcon\Acl\Role;
@@ -639,7 +639,7 @@ EOD;
 
         if (!empty($mod_cfg))
         {
-            if ($mod_cfg->exists('roles')) {
+            if ($mod_cfg->has('roles')) {
                 $roles = $mod_cfg->roles;
                 foreach($roles as $role) {
                     if ($this->hasRole($role)) {

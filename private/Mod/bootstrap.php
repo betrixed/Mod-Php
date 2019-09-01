@@ -30,8 +30,8 @@ $gConfig = [
     'configCache' => PHP_DIR . '/cache/config'
 ];
 
-
 Path::$config = new \Phalcon\Config($gConfig,false);
+
 
 Path::$config->merge(Path::getConfig($gConfig['configDir'] . '/config.xml'));
 

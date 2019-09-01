@@ -6,7 +6,7 @@
  * and open the template in the editor.
  */
 
-namespace Mod\App\Controllers;
+namespace App\Controllers;
 
 /**
  * Description of IndexController

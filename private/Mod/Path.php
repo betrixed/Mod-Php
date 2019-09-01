@@ -150,6 +150,10 @@ class Path {
     static function getConfig($path)  {
         $pinfo = pathinfo($path);
         $ext = $pinfo['extension'];
+        $cachePath = Path::endSep(self::$config->configCache) . 
+                        str_replace([DS,':'],'_',$pinfo['dirname']) .
+                        '-' . $pinfo['filename'] . '.ktc';
+        
         switch ($ext) {
             case 'php':
                 $obj = require $path;

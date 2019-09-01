@@ -9,7 +9,8 @@
 namespace Mod;
 
 use Phalcon\Di\DiInterface;
-use Phalcon\Session\Adapter\Files as SessionAdapter;
+use Phalcon\Session\Manager;
+use Phalcon\Session\Adapter\Stream as SessionAdapter;
 use Phalcon\Mvc\View\Engine\Volt as VoltEngine;
 use Phalcon\Mvc\View;
 use Phalcon\Mvc\Url;
@@ -97,8 +98,10 @@ class Setup {
             ini_set('session.gc_maxlifetime', SESSION_TIME_OUT);
             session_set_cookie_params(SESSION_TIME_OUT);
 
-            $session = new SessionAdapter();
-            $session->start();
+            $session = new Manager();
+            $files = new SessionAdapter(['savePath' => '/tmp']);
+            $session->setHandler($files);
+            //$session->start();
             return $session;
         });
 

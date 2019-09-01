@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tb>
+    <tb k='_default'>
+        <s k='controller'>home</s>
+        <s k='action'>index</s>
+        <s k='module'>page_admin</s>
+    </tb>
+    <a k='_pattern'>
+        <tb>
+            <s k='match'>/gallery/:action</s>
+            <s k='controller'>gallery</s>
+            <s k='action'>1</s>
+            <s k='module'>page_admin</s>  
+        </tb>
+        <tb>
+            <s k='match'>/gallery/view/{name}</s>
+            <s k='controller'>gallery</s>
+            <s k='action'>view</s>
+            <s k='module'>page_admin</s>  
+        </tb>
+        <tb>
+            <s k='match'>/article/{name}</s>
+            <s k='controller'>article</s>
+            <s k='action'>byTitle</s>
+            <s k='module'>page_admin</s>  
+        </tb>
+        <tb>
+            <s k='match'>/page_admin/edit/{action}</s>
+            <tb k='paths'>
+                <s k='controller'>edit</s>
+                <s k='action'>1</s>
+                <s k='module'>page</s>  
+            </tb>  
+        </tb>
+        <tb>
+            <s k='match'>/page_admin/category/{action}</s>
+            <tb k='paths'>
+                <s k='controller'>category</s>
+                <s k='action'>1</s>
+                <s k='module'>page</s>  
+            </tb>  
+        </tb>
+        <tb>
+            <s k='match'>/page_admin/category/{action}/{id}</s>
+            <tb k='paths'>
+                <s k='controller'>category</s>
+                <s k='action'>1</s>
+                <s k='id'>2</s>
+                <s k='module'>page</s>  
+            </tb>  
+        </tb>
+        <tb>
+            <s k='match'>/page_admin/links/{action}</s>
+            <tb k='paths'>
+                <s k='controller'>links</s>
+                <s k='action'>1</s>
+                <s k='module'>page</s>  
+            </tb>  
+        </tb>
+        <tb>
+            <s k='match'>/page_admin/meta/{action}</s>
+            <tb k='paths'>
+                <s k='controller'>admingallery</s>
+                <s k='action'>1</s>
+                <s k='module'>page</s>  
+            </tb>  
+        </tb>
+        <tb>
+            <s k='match'>/page_admin/gallery/{action}/{name}</s>
+            <tb k='paths'>
+                <s k='controller'>admingallery</s>
+                <s k='action'>1</s>
+                <s k='name'>2</s>
+                <s k='module'>page</s>  
+            </tb>  
+        </tb>
+    </a>
+    <tb k='edit'>
+        <tb k='categorytick'>
+            <a k='methods'>
+                <s>POST</s>
+            </a>
+        </tb>
+        <tb k='note'>
+            <a k='methods'>
+                <s>GET</s>
+                <s>POST</s>
+            </a>
+            <s k='pattern'>blog/{id}</s>
+        </tb>
+    </tb>
+    <tb k='contact'>
+        <tb k='index'>
+            <a k='methods'>
+                <s>GET</s>
+                <s>POST</s>
+            </a>
+        </tb>
+    </tb>
+    <tb k='home'>
+        <tb k='index'>
+            <a k='methods'>
+                <s>GET</s>
+            </a>
+        </tb>
+        <tb k='link'>
+            <a k='methods'>
+                <s>GET</s>
+            </a>
+        </tb>
+        <tb k='home'>
+            <a k='methods'>
+                <s>GET</s>
+            </a>
+        </tb>
+    </tb>
+    <tb k='refer'>
+        <tb k='index'>
+            <a k='methods'>
+                <s>GET</s>
+            </a>
+        </tb>
+    </tb>
+    <tb k='cat'>
+        <s k='controller'>artcat</s>
+        <tb k='_actions'>
+            <s k='index'>index/{catclean}</s>
+            <s k='fetch'>fetch/{id}</s>
+        </tb>
+    </tb>
+</tb>

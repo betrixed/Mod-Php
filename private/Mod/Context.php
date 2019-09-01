@@ -72,11 +72,16 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
      */
     static function getArrayConfig(string $full, string $extension) : array {
         switch($extension) {
-            case 'toml' :
-                $routeData = TomlParser::parseFile($full);
-                return $routeData->toArray();
+            case 'xml' :
+                return (new XmlArray)->parseFile($full);
             case 'php' :
                 $routeData = require $full;
+                if (is_array($routeData)) {
+                    return $routeData;
+                }
+                else if (is_a($routeData, '\Phalcon\Config')) {
+                    return $routeData->toArray();
+                }
                 return $routeData;
             default:
                 $config = Path::getConfig($full);
@@ -93,11 +98,11 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         }
         else {
             $lookFor = "routes";
+            $extlist = ['xml','php','toml'];
             $path = Path::endSep($path);
-            $files = scandir($path);
-            foreach($files as $test) {
-                if (substr($test,0,strlen($lookFor))==$lookFor){
-                    $full = $path . $test;
+            foreach($extlist as $test) {
+                $full = $path . $lookFor . '.' . $test;
+                if (file_exists($full)) {
                     return $full;
                 }
             }
@@ -149,21 +154,6 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         $response->setContent($content);
         return $response;
     }
-    public function getCacheHtml($cache_file, $html_func){
-        $frontCache = new \Phalcon\Cache\Frontend\Output(array("lifetime" => 900));// 15 minutes
-        $cachedir = $this->activeModule->htmlCache;
-        $cache = new \Phalcon\Cache\Backend\File($frontCache, array("cacheDir" => $cachedir));
-        $content = $cache->start($cache_file);
-        if (empty($content) ){
-            
-            $content =  $html_func();
-            
-            echo $content;
-
-            $cache->save();
-        }
-        return $content;       
-     }
      
     function dispatcherService($namespace) {
         $di = $this->di;
@@ -592,15 +582,17 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
             }
         }
 
-        $this->initialURI = filter_input(INPUT_GET, '_url');
-        $key = self::uriModuleStr($this->initialURI);
+        $url = filter_input(INPUT_GET, '_url');
+        $this->initialURI = $url;
+        $key = self::uriModuleStr($url);
         if (!empty($key)) {
-            if ('/' . $key === $this->initialURI) {
+            if ('/' . $key === $url) {
         // see if the URL is a mapped keyword in config['urlmap']
                  $config = $this->config;
-                 if (isset($config['urlmap'])) {
-                     $config = &$config['urlmap'];
-                     if (isset($config[$key])) {
+                 $test = $config->toArray();
+                 if ($config->exists('urlmap')) {
+                     $config = $config['urlmap'];
+                     if ($config->exists($key)) {
                          $item = $config[$key];
                          $url = '/' . $item->controller . '/' . $item->action;
                          $_GET['_url'] = $url;
@@ -609,7 +601,12 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
                  }
              }          
         }
+        else {
+            $url = '/';
+        }
         $this->uriModule = $key;
+        $this->url = $url;
+        
         $alias = (!empty($key) && isset($this->allModules[$key])) 
                 ? $key
                 : $config['defaultModule'];
@@ -633,7 +630,7 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         //$app->useImplicitView(false); 
         $this->application = $app;
         
-        $response = $app->handle();
+        $response = $app->handle($this->url);
         $response->send();
     }
     

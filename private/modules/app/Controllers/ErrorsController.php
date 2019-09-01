@@ -2,7 +2,7 @@
 /**
  * @author Michael Rynn
  */
-namespace Mod\App\Controllers;
+namespace App\Controllers;
 
 class ErrorsController  extends \Pcan\Controllers\ErrorsController {
 

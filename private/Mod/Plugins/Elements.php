@@ -4,7 +4,7 @@ namespace Mod\Plugins;
 
 use Mod\Plugins\Menu\Menu;
 use Mod\Plugins\MenuTree;
-use Phalcon\Mvc\User\Component;
+use Phalcon\Plugin;
 use Mod\Path;
 
 /**
@@ -13,7 +13,7 @@ use Mod\Path;
  *  UI elements for the application.
  *  Asset output convenience.
  */
-class Elements extends Component {
+class Elements extends Plugin {
 
     private $secId;
     //private $mainMenu;
@@ -383,7 +383,7 @@ class Elements extends Component {
         $cssFileName = $targetCss . ".css";
         if (count($cssList) > 0)
         {
-            $assets = ['targetCss' => $cssFileName, 'name' => $modName];
+            $assets = ['targetCss' => $cssFileName, 'name' => $targetCss];
 
             $assets['css'] = $cssList;
             
