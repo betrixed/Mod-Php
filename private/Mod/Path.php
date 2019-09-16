@@ -104,26 +104,7 @@ class Path {
             }
         }
     }
-    /**
-     * replace {DEFINE} on root values
-     * @param Pun\KeyTable $config
-     */
-    static function replaceDefines(\Phalcon\Config $config) {
-        $map = get_defined_constants();
-        foreach($config as $key => $value) {
-            if (is_string($value)) {
-                $matches = null;
-                if (preg_match('/\${(\w+)}/', $value, $matches)) {
-                    $r = str_replace($matches[0], $map[$matches[1]], $value);
-                    $config[$key] = $r;
-                }
-            }
-            elseif (is_a($value,'\Phalcon\Config'))
-            {
-                static::replaceDefines($value);
-            }
-        }
-    }
+
     static function valuesCallback($config, $valueCallback) {
         if (!is_callable($valueCallback)) { 
             throw new \Exception('Needs function for callback');
@@ -158,30 +139,33 @@ class Path {
             case 'php':
                 $obj = require $path;
                 if (is_array($obj)) {
-                    $result = new \Phalcon\Config($obj,false);
+                    $result = XmlConfig::fromArray($obj);
                 }
-                else if (is_a($obj,'\Phalcon\Config')) {
+                else if (is_a($obj,'\Mod\XmlConfig')) {
                     $result = $obj;
                 }
                 break;
-            case 'ini':
+            /*case 'ini':
                 $result = new Ini($path);
-                break;
+                break;*/
             case 'xml':
-                $result = new \Phalcon\Config((new XmlArray)->parseFile($path),false);
+                $result = XmlConfig::fromFile($path);
+                if (is_array($result)) {
+                    $result = XmlConfig::fromArray($result);
+                }
                 break;
-            case 'json':
+            /*case 'json':
                 $result = new Json($path);
                 break;
             case 'yaml':
                 $result = new Yaml($path);
-                break;
+                break;*/
             default:
                 $result = null;
                 break;
         }
         if (!empty($result)) {
-            static::replaceDefines($result);
+            XmlConfig::replaceDefines($result);
         }
         return $result;
     }

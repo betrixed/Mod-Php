@@ -13,7 +13,7 @@ use Phalcon\Session\Manager;
 use Phalcon\Session\Adapter\Stream as SessionAdapter;
 use Phalcon\Mvc\View\Engine\Volt as VoltEngine;
 use Phalcon\Mvc\View;
-use Phalcon\Mvc\Url;
+use Phalcon\Url;
 use Phalcon\Mvc\Model\Metadata\Files as MetaData;
 
 const SESSION_TIME_OUT = 4 * 3600;
@@ -68,7 +68,7 @@ class Setup {
         $config = $di->get('config');
         $database = $config->database;
         $di->setShared('db', function () use ($database) {
-            $adapter = $database->get('adapter', 'Mysql');
+            $adapter = $database->adapter ?? 'Mysql';
             $adapter = 'Phalcon\Db\Adapter\Pdo\\' . $adapter;
 
             $connection = new $adapter([
@@ -109,7 +109,8 @@ class Setup {
             return new Plugins\Elements();
         });
 
-        $baseURI = $config->application->baseURI;
+        $baseURI = $config->application->baseURI ?? '';
+
         $di->setShared("url", function () use($baseURI) {
             $url = new Url();
 

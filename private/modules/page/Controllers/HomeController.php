@@ -12,14 +12,19 @@ use Phalcon\Events\Manager;
 class HomeController extends \Phalcon\Mvc\Controller
 {
     protected $linkId;
-    
+    public function pickView($name) {
+        $view = $this->view;
+        $this->ctx->pickView($view, 'home/' . $name);
+        $view->myController = '/home/';
+        $view->myURL = $view->myController . $name . '/';
+    }
     protected function buildAssets()
     {
         $elements = $this->elements;
         $elements->addAsset('bootstrap');
         //$elements->addAsset('salvattore');
 
-        $elements->moduleCssList(['novosti.css','sbo.css'], 'page');
+        $elements->addAssetsArray(['novosti.css','sbo.css'], 'page');
 
     }
     public function initialize()
@@ -248,8 +253,8 @@ EOD;
     public function pageHtmlContent()
     {
         $ctx = $this->ctx;
-        $sideContent = $ctx->getCacheHtml("side_index.html", [$this,'sideHtmlContent']);
-        $mainContent = $ctx->getCacheHtml("home_wide_content.html", [$this,'mainHtmlContent']);    
+        //$sideContent = $ctx->getCacheHtml("side_index.html", [$this,'sideHtmlContent']);
+        //$mainContent = $ctx->getCacheHtml("home_wide_content.html", [$this,'mainHtmlContent']);    
 
         $view = $this->makeCacheView('home/mobile_index');
         $view->setLayoutsDir('layouts/');
@@ -275,11 +280,14 @@ EOD;
     public function indexAction()
     {
         $this->buildAssets();
-
+        $this->pickView('full_index');
+        /*
         $content = $this->pageHtmlContent();
         $response = new \Phalcon\Http\Response();
         $response->setContent($content);
         return $response;
+         * 
+         */
     }
     
 

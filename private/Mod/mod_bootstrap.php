@@ -12,18 +12,19 @@ defined('VENDOR') || define('VENDOR', PHP_DIR . '/vendor');
 $mod = $ctx->activeModule;
 (new \Phalcon\Loader)->registerNamespaces([
             $mod->namespace => $mod->dir,
+            'Mod' => PHP_DIR . "/Mod"
         ])
         ->register();
 $config = $ctx->config;
-Path::mergeConfigFile($mod, $mod->dir . '/mod_config.xml');
+$mod->addFile($mod->dir . '/mod_config.xml');
 
 
-$config['database'] = Path::getConfig( $config['configDir'] . '/database.xml');
-$config['pcan'] = Path::getConfig( $config['configDir'] . '/pcan.xml');
+$config->database = Path::getConfig( $config->configDir . '/database.xml');
+$config->pcan = Path::getConfig( $config->configDir . '/pcan.xml');
 
 $mod->viewsDir = [
     $mod->viewsDir,
-    $config['pcan']['pcanDir'] . DS . 'views' . DS
+    $config->pcan->pcanDir . DS . 'views' . DS
 ];
 
 $ctx->viewService();

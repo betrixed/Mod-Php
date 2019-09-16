@@ -2,11 +2,8 @@
 namespace Mod;
 
 class DStack {
-
     public $ref;
     public $dataType;
-    public $isTable;
-
 }
 
 function intercept_error($errno, $errstr, $errfile, $errline) {
@@ -25,14 +22,20 @@ function intercept_error($errno, $errstr, $errfile, $errline) {
  * Attributes are
  * k - string key for associative array  
  */
+
 class XmlArray extends \XMLReader {
 
+    public $addRoot;
     public $root;
-    public $table;
+    public $table; // reference to array
+    public $config; // config object
     public $path;
-    public $isTable; // true for table, false for value list array
     public $dataType;
 
+    public function __construct(XmlConfig $add = null) {
+        $this->addRoot = $add;
+        $this->dataType = null;
+    }
     /**
      * Return array by reference
      * @param type $path
@@ -40,7 +43,7 @@ class XmlArray extends \XMLReader {
      * @throws type
      * @return array
      */
-    public function &parseFile($path) : array {
+    public function parseFile($path) {
         $old_error_handler = set_error_handler("\WC\intercept_error");
         $toThrow = null;
         try {
@@ -51,7 +54,7 @@ class XmlArray extends \XMLReader {
                 } else if ($this->nodeType === \XMLReader::TEXT) {
                     
                 } else if ($this->nodeType === \XMLReader::END_ELEMENT) {
-                    if ($this->name === "tb" || $this->name === "a") {
+                    if ($this->name === "tb" || $this->name === "a" || $this->name === "root") {
                         $this->popTable();
                     }
                 }
@@ -75,39 +78,92 @@ class XmlArray extends \XMLReader {
             $ct--;
             if ($ct > 0) {
                 $dstack = $this->path[$ct - 1];
-                $this->table = &$dstack->ref;
-                $this->isTable = $dstack->isTable;
-                $this->dataType = $dstack->dataType;
+                $ptype = $dstack->dataType;
+                switch($ptype) {
+                    CASE XmlConfig::XC_TABLE:
+                    CASE XmlConfig::XC_ARRAY:
+                        $this->table = &$dstack->ref;
+                        break;
+                    CASE XmlConfig::XC_CONFIG: 
+                        $this->config = $dstack->ref;
+                        break;
+                    
+                }
+                $this->dataType = $ptype;
             }
         } else {
             throw new \Exception("Pop on empty table stack");
         }
     }
 
+    public function pushRoot($k = null) {
+        $ptype = $this->dataType;
+        if (is_null($ptype)) {
+            if ($this->addRoot) {
+                $nroot = $this->addRoot;
+            }
+            else {
+                $nroot = new XmlConfig();
+            }
+            $this->root = $nroot;
+        } else {
+            $nroot = new XmlConfig();
+            // check out type of current "table"
+            if (!empty($k)) {
+                // use key
+                switch($ptype) {
+                    CASE XmlConfig::XC_CONFIG:
+                        $this->config->$k = $nroot;
+                        break;
+                    CASE XmlConfig::XC_TABLE:
+                        $this->table[$k] = $nroot;
+                        break;
+                    DEFAULT:
+                        throw new \Exception("Parent not indexed");
+                        break;
+                }   
+            } else {
+                // push end array
+                if ($ptype !== XmlConfig::XC_ARRAY) {
+                    throw new \Exception("Parent not a list");
+                }
+                //$this->table->pushBack($ntb);
+                
+                $this->table[] = $nroot;
+            }
+        }
+        //$this->table = null;
+        //If ->table is a reference, assigning to it does weird sxxx
+        $this->config = $nroot;
+        $this->dataType = XmlConfig::XC_CONFIG;
+        $dstack = new DStack();
+        $dstack->ref = $nroot;
+        $dstack->dataType = XmlConfig::XC_CONFIG;
+        $this->path[] = $dstack;
+    }
     public function pushTable($atype = null, $k = null) {
         // PHP arrays will require & for assignment
         $ntb = [];
-        $wasTable = $this->isTable;
-        if (!empty($atype)) {
-            //$ntb = new ValueList;
-            $this->isTable = false;
-        } else {
-            //$ntb = new KeyTable;
-            $this->isTable = true;
-        }
+        $ptype = $this->dataType;
         if (is_null($this->root)) {
             $this->root = &$ntb;
             $this->isTable = true;
         } else {
             if (!empty($k)) {
-                // use key
-                if (!$wasTable) {
-                    throw new \Exception("Parent is not table");
+                switch($ptype) {
+                    CASE XmlConfig::XC_CONFIG:
+                        $this->config->$k =  &$ntb;
+                        break;
+                    CASE XmlConfig::XC_TABLE:
+                        $this->table[$k] = &$ntb;
+                        break;
+                    DEFAULT:
+                        throw new \Exception("Parent is not indexed");
+                        break;
                 }
-                $this->table[$k] = &$ntb;
             } else {
                 // push end array
-                if ($wasTable) {
+                if (XmlConfig::XC_ARRAY !== $ptype) {
                     throw new \Exception("Parent is not list");
                 }
                 //$this->table->pushBack($ntb);
@@ -120,16 +176,23 @@ class XmlArray extends \XMLReader {
         $dstack = new DStack();
         $dstack->ref = &$ntb;
         $dstack->dataType = $atype;
-        $dstack->isTable = $this->isTable;
         $this->path[] = $dstack;
     }
 
     public function setValue($val, $k = null) {
-        if ($this->isTable) {
-            $this->table[$k] = $val;
-        } else {
-            //$this->table->pushBack($stemp);
-            $this->table[] = $val;
+        switch($this->dataType) {
+            CASE XmlConfig::XC_CONFIG:
+                $this->config->$k =  $val;
+                break;
+            CASE XmlConfig::XC_TABLE:
+                $this->table[$k] = $val;
+                break;
+            CASE XmlConfig::XC_ARRAY:
+                $this->table[] = $val;
+                break;
+            DEFAULT:
+                throw new \Exception("Parent is not indexed");
+                break;
         }
     }
 
@@ -145,12 +208,15 @@ class XmlArray extends \XMLReader {
             }
         }
         switch ($this->name) {
+            case "root":
+                $this->pushRoot($k);
+                break;
             case "tb" :
-                $this->pushTable(null, $k);
+                $this->pushTable(XmlConfig::XC_TABLE, $k);
                 break;
             case "a" :
                 // start array, which means no key for elements
-                $this->pushTable("a", $k);
+                $this->pushTable(XmlConfig::XC_ARRAY, $k);
                 break;
             case "i" :
                 $this->setValue(intval($this->readString()), $k);

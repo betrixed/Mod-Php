@@ -30,19 +30,19 @@ $gConfig = [
     'configCache' => PHP_DIR . '/cache/config'
 ];
 
-Path::$config = new \Phalcon\Config($gConfig,false);
+Path::$config = new XmlConfig();
 
+Path::$config->addArray($gConfig);
+Path::$config->addFile($gConfig['configDir'] . '/config.xml');
 
-Path::$config->merge(Path::getConfig($gConfig['configDir'] . '/config.xml'));
-
-if (Path::$config['offline']) {
+if (Path::$config->offline) {
     echo ("Sorry, this service is offline.");
     return;
 }
 
 
 try {
-    switch (Path::$config['configType']) {
+    switch (Path::$config->configType) {
         case 'module' :
         default :
             $ctx = new Context();

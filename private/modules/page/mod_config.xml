@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tb>
-    <a k='css'>
-        <s>sbo.css</s><s>novosti.css</s>
-    </a>
+    <tb k='assets'>
+        <s k='path'>page</s>
+        <a k='css'>
+            <s>sbo.css</s>
+            <s>novosti.css</s>
+        </a>
+    </tb>
+
     <a k='roles'>
         <s>Guest</s>
     </a>

@@ -5,10 +5,11 @@ use Mod\Path;
 use Phalcon\Events\Event;
 use Phalcon\Plugin;
 use Phalcon\Mvc\Dispatcher;
-
+use Phalcon\Acl\Enum;
+use Phalcon\Db\Enum as DbEnum;
 use Phalcon\Acl\Role;
 use Phalcon\Acl\Adapter\Memory as AclList;
-use Phalcon\Acl\Resource;
+use Phalcon\Acl\Component;
 
 use Secure\Models\UserEvent;
 use Secure\Models\ResetCode;
@@ -81,7 +82,7 @@ class Security extends Plugin
         
         $stmt->execute();
         
-        $stmt->setFetchMode(\Phalcon\Db::FETCH_OBJ);    
+        $stmt->setFetchMode(DbEnum::FETCH_OBJ);    
         $data =  $stmt->fetchAll(); 
 
         if (is_array($data) && count($data) > 0)
@@ -306,7 +307,7 @@ class Security extends Plugin
         $stmt->bindValue(':id', $id, \PDO::PARAM_INT);
         $stmt->bindValue(':event', $eventName, \PDO::PARAM_STR);
         $stmt->execute();
-        $stmt->setFetchMode(\Phalcon\Db::FETCH_OBJ); 
+        $stmt->setFetchMode(DbEnum::FETCH_OBJ); 
         
         $data =  $stmt->fetchAll(); 
         return $data;
@@ -408,7 +409,7 @@ class Security extends Plugin
     {
         $acl = new AclList();
         //$acl->setNoArgumentsDefaultAction(\Phalcon\Acl::DENY);
-        $acl->setDefaultAction(\Phalcon\Acl::DENY);
+        $acl->setDefaultAction(Enum::DENY);
         
         // Roles are from the group table 
         // Guest indicates public permissions
@@ -416,7 +417,7 @@ class Security extends Plugin
         $db = $this->getDI()->get('db');
         
         $q_roles = $db->query("select name from user_group where active = 1");
-        $q_roles->setFetchMode(\Phalcon\Db::FETCH_COLUMN,0);
+        $q_roles->setFetchMode(DbEnum::FETCH_COLUMN,0);
         $roles = [];
         while($result = $q_roles->fetch())
         {
@@ -437,7 +438,7 @@ select r.name as resource, r.action, ug.name from permissions p
  order by  resource, action, name
 EOD;
         $stmt = $db->query($sql);
-        $stmt->setFetchMode(\Phalcon\Db::FETCH_OBJ);
+        $stmt->setFetchMode(DbEnum::FETCH_OBJ);
         $results = $stmt->fetchAll();  // array of objects
         
         
@@ -459,7 +460,7 @@ EOD;
                 {
                     if (count($actions) > 0)
                     {
-                        $acl->addResource(new Resource($resource), $actions);
+                        $acl->addComponent(new Component($resource), $actions);
                     }
                    
                     $resource = $row->resource; // reset
@@ -470,10 +471,10 @@ EOD;
             }
             if (count($actions) > 0)
             {
-                $acl->addResource(new Resource($resource), $actions);
+                $acl->addComponent(new Component($resource), $actions);
             }
         }
-        $acl->addResource(new Resource('admin/permissions'), ['index']);
+        $acl->addComponent(new Component('admin/permissions'), ['index']);
         
         // Public area resources if empty permissions database
         $publicResources = array(
@@ -490,7 +491,7 @@ EOD;
             'user_control' => array('resetPassword')
         );
         foreach ($publicResources as $resource => $actions) {
-            $acl->addResource(new Resource($resource), $actions);
+            $acl->addComponent(new Component($resource), $actions);
         }
         
         // Grant access to public areas to all users which have Guest in role list
@@ -648,8 +649,8 @@ EOD;
                 }
             }
             else {
-                $useAcl = $mod_cfg->get('useAcl');
-                if (!is_null($useAcl) && ($useAcl == false))
+                $useAcl = $mod_cfg->useAcl ?? true;
+                if (!$useAcl)
                     return true;
             }
         }
@@ -671,7 +672,7 @@ EOD;
        $msg =  "Not found: " . $resourceName . '/' . $action;      
 
         $this->flash->error($msg);
-        
+
         $dispatcher->forward(
             array(
                 'controller' => 'errors',

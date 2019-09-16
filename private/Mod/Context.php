@@ -8,18 +8,16 @@ namespace Mod;
 
 use Phalcon\Events\Event;
 use Phalcon\Events\Manager as EventsManager;
-use Phalcon\Dispatcher;
-use Phalcon\Mvc\Dispatcher\Exception as DispatcherException;
 use Phalcon\Mvc\Dispatcher as MvcDispatcher;
+use Phalcon\Dispatcher\Exception as PhalconException;
+use Phalcon\Dispatcher\AbstractDispatcher as ADispatch;
 use Phalcon\Di\FactoryDefault;
-use Phalcon\Mvc\View\Engine\Volt as VoltEngine;
+use Phalcon\Mvc\View\Engine\Volt;
 use Phalcon\Mvc\View;
 use Phalcon\Config;
 use Phalcon\Mvc\Router;
-
 use Phalcon\Logger\Adapter\File as Logger;
 use Phalcon\Logger\Formatter\Line as LineFormatter;
-
 
 /**
  * This started out as code to only setup for 1 module for each request.
@@ -38,7 +36,6 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
     public $controller; // set after dispatch
     public $action;
     public $application; // for pokes
-    
     public $config; // global Phalcon/Config
     public $allModules; // array of modules PhalconConfig
     public $modules; // Array of  dynamic configured modules 
@@ -47,11 +44,12 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
     public $uriModule; // if a module component in GET{'_url']
     public $isMakingView;  // if true, exceptions need to handled with grace
     public $acl; // security plugin, if any
+    public $url;
+
     /**
      * 
      * @param \Phalcon\DiInterface $di
      */
-
     public function setDI(\Phalcon\Di\DiInterface $di) {
         $this->di = $di;
     }
@@ -60,47 +58,47 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
      * 
      * @return \Phalcon\DiInterface
      */
-    public function getDI() : \Phalcon\Di\DiInterface {
+    public function getDI(): \Phalcon\Di\DiInterface {
         return $this->di;
     }
-    /** 
+
+    /**
      * Full file path and extension, switch on extension type
      * to read the configuration as nested array.
      * @param string $full
      * @param string $extension
      * @return array
      */
-    static function getArrayConfig(string $full, string $extension) : array {
-        switch($extension) {
+    static function getArrayConfig(string $full, string $extension): array {
+        switch ($extension) {
             case 'xml' :
                 return (new XmlArray)->parseFile($full);
             case 'php' :
                 $routeData = require $full;
                 if (is_array($routeData)) {
                     return $routeData;
-                }
-                else if (is_a($routeData, '\Phalcon\Config')) {
+                } else if (is_a($routeData, '\Phalcon\Config')) {
                     return $routeData->toArray();
                 }
                 return $routeData;
             default:
                 $config = Path::getConfig($full);
                 return $config->toArray();
-        }   
+        }
     }
+
     function getRoutesConfigPath() {
         $modConfig = $this->activeModule;
         $path = $modConfig->dir;
-        
+
         if (isset($modConfig->routes)) {
-             $full = $modConfig->routes;
-             return $full;
-        }
-        else {
+            $full = $modConfig->routes;
+            return $full;
+        } else {
             $lookFor = "routes";
-            $extlist = ['xml','php','toml'];
+            $extlist = ['xml', 'php', 'toml'];
             $path = Path::endSep($path);
-            foreach($extlist as $test) {
+            foreach ($extlist as $test) {
                 $full = $path . $lookFor . '.' . $test;
                 if (file_exists($full)) {
                     return $full;
@@ -108,64 +106,61 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
             }
             throw new \Exception("Cannot find a routes.* in " . $path);
         }
-        
     }
+
     function routerService() {
         $modConfig = $this->activeModule;
         $path = $modConfig->dir;
         $routeFile = $this->getRoutesConfigPath();
         $routeCache = $this->config->configCache . "/routes_" . $modConfig->name . ".dat";
-        
-        if (!file_exists($routeCache) || (filemtime($routeCache) < filemtime($routeFile)) ) {
-        //if(true) {
+
+        if (!file_exists($routeCache) || (filemtime($routeCache) < filemtime($routeFile))) {
+            //if(true) {
             $info = pathinfo($routeFile);
             $routeData = self::getArrayConfig($routeFile, $info['extension']);
             $router = new Router(false);
-           
+
             $unpack = new RoutesUnpack($router, $modConfig->alias, $modConfig->isDefaultModule);
             $unpack->addRouteData($routeData);
-            file_put_contents($routeCache,serialize($router));
-        }
-        else {
+            file_put_contents($routeCache, serialize($router));
+        } else {
             $router = unserialize(file_get_contents($routeCache));
         }
         // Set default module and URI after unserialize
         if ($modConfig->isDefaultModule) {
-               $router->setDefaultModule($modConfig->alias);
-               if ($this->uriModule === $modConfig->name)
-               {
-                   $_GET['_url'] = str_replace(
-                           '/' . $this->uriModule, 
-                           '',
-                           $this->initialURI
-                           );
-               }
+            $router->setDefaultModule($modConfig->alias);
+            if ($this->uriModule === $modConfig->name) {
+                $_GET['_url'] = str_replace(
+                        '/' . $this->uriModule,
+                        '',
+                        $this->initialURI
+                );
+            }
         }
-        
+
         $this->di->setShared('router', $router);
     }
-    
 
     public function getCacheResponse($cache_file, $html_func) {
         $content = $this->getCacheHtml($cache_file, $html_func);
         $response = new \Phalcon\Http\Response();
 
-        
+
         $response->setContent($content);
         return $response;
     }
-     
+
     function dispatcherService($namespace) {
         $di = $this->di;
 
         $di->setShared('dispatcher', function () use ($di, $namespace) {
             $hasACL = $di->has('acl');
             $ctx = $di->get('ctx');
-            
+
             // Create an events manager
             $dispatcher = new MvcDispatcher();
             $dispatcher->setDefaultNamespace($namespace);
-            
+
             $eventsManager = new EventsManager();
 
             // Listen for events produced in the dispatcher using the Security plugin          
@@ -176,18 +171,19 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
             }
 
             // Handle exceptions 
-            $eventsManager->attach('dispatch:beforeException', 
-            function(Event $event, $dispatcher, \Exception $exception = null) use ($ctx) {
+            $eventsManager->attach('dispatch:beforeException',
+                    function(Event $event, $dispatcher, \Exception $exception = null) use ($ctx) {
                 if (!is_null($exception)) {
                     return $ctx->beforeException($event, $dispatcher, $exception);
                 }
                 return true;
             });
-                
+
             $dispatcher->setEventsManager($eventsManager);
             return $dispatcher;
         });
     }
+
     /** useImplicitView was turned off to delay view creation
      *  and it can't be switched back one while in the handle procedure.
      *  
@@ -195,36 +191,34 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
     public function getDispatchView() {
         $viewPath = $this->controller . DIRECTORY_SEPARATOR . $this->action;
         return $this->getActionView($viewPath);
-        
     }
+
     /**
      * Setting the viewsDir property can be delayed until render
      */
-    public function getActionViewsDir($controllerAction)
-    {
+    public function getActionViewsDir($controllerAction) {
         $mod = $this->activeModule;
-        
+
         // make ordered list of paths to look for $controllerAction
         $viewsDir = $mod->viewsDir;
         if (is_array($viewsDir)) {
             /** For some reason, array of paths can bugger up getting
               content out of render
-             This is because all possible matches will get compiled
-             and one of them might give errors.
-             Therefore, only pass the first match.
+              This is because all possible matches will get compiled
+              and one of them might give errors.
+              Therefore, only pass the first match.
              */
-            $match = Path::findFirstPath($viewsDir,$controllerAction,['.volt']);
+            $match = Path::findFirstPath($viewsDir, $controllerAction, ['.volt']);
             if (is_array($match)) {
                 return $match[0];
-            }
-            else {
+            } else {
                 return $viewsDir[0]; // Instead of last?
             }
-        }
-        else {
+        } else {
             return $viewsDir;
         }
     }
+
     /** Get a new view object for current module, 
      *  for given 'controller/action', finding first match
      *  in module views directory array
@@ -236,16 +230,15 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         $view->registerEngines([".volt" => 'volt']);
         return $view;
     }
+
     /**
      * Select the view using the controller/action lookup
      * @param type $view
      * @param type $controllerAction
      * @throws \Exception
      */
-    public function pickView($view, $controllerAction)
-    {
-        if (!isset($controllerAction))
-        {
+    public function pickView($view, $controllerAction) {
+        if (!isset($controllerAction)) {
             throw new \Exception("pickView: controller/action not set");
         }
 
@@ -256,9 +249,10 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         $view->myDir = $viewsDir . $controllerAction;
         $this->setViewUser($view);
     }
+
     public function viewService() {
         $di = $this->di;
-        
+
         $ctx = $this;
         $di->set("view", function () use ($ctx) {
             return $ctx->createView();
@@ -269,15 +263,16 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         if (!file_exists($cacheDir)) {
             mkdir($cacheDir, 0777, true);
         }
-        
-        $di->setShared('volt', function ($view, $di) use ($cacheDir) {
 
-            $volt = new VoltEngine($view, $di);
+        $di->set('volt',
+            function ( $view) use ($cacheDir) {
+            
+            $volt = new Volt($view);
 
             $volt->setOptions(array(
-                "compiledPath" => $cacheDir,
-                'compiledSeparator' => '_',
-                'compileAlways' => false
+                "path" => $cacheDir,
+                'separator' => '_',
+                'always' => false
             ));
 
             return $volt;
@@ -316,28 +311,28 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
             $sec = $this->acl;
             $view->userId = $sec->userId;
             $view->userName = $sec->userName;
-            $view->roleList = $sec->getRoles(); 
-            
+            $view->roleList = $sec->getRoles();
+
             $view->isUser = $sec->hasRole('User');
             $view->isAdmin = $sec->hasRole('Admin');
             $view->isEditor = $sec->hasRole('Editor');
-                 
+
             $view->isMobile = $sec->isMobile();
             $view->myLogo = $this->config->pcan->logo;
-            
+
             /*
-            $uriPath = "/";
-            if (!empty($sec->urlModule)) {
-                $uriPath .= $sec->urlModule . "/";
-            }
-            $uriPath .= $sec->controller  . "/";
-            
-            $view->myController = $uriPath;
+              $uriPath = "/";
+              if (!empty($sec->urlModule)) {
+              $uriPath .= $sec->urlModule . "/";
+              }
+              $uriPath .= $sec->controller  . "/";
+
+              $view->myController = $uriPath;
              * 
              */
         }
-        
     }
+
     public function setMakingView($bval) {
         $this->isMakingView = $bval;
     }
@@ -350,42 +345,39 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         $config = $this->config;
         $defaultDir = $config->exists('modulesDir') ? $config->modulesDir : PHP_DIR . '/modules';
         return Path::noEndSep($defaultDir);
-   
     }
-    
-    
+
     private function dynamicConfig($mod, $name) {
-        
-        Path::replaceDefines($mod);
+
+        XmlConfig::replaceDefines($mod);
         $mod->name = $name;
-        
-        if (!isset($mod['namespace'])) {
+
+        if (!isset($mod->namespace)) {
             throw new \Exception('module_data.' . $name . ' needs namespace value');
         }
-        
-        if (!isset($mod['dir'])) {
-            $mod['dir'] = $this->getDefaultModulesDir() . DS . $name;
+
+        if (!isset($mod->dir)) {
+            $mod->dir = $this->getDefaultModulesDir() . DS . $name;
+        } else {
+            $mod->dir = Path::noEndSep($mod->dir);
         }
-        else {
-            $mod['dir'] = Path::noEndSep($mod['dir']);
+
+        if (!isset($mod->path)) {
+            $mod->path = $mod->dir . '/Module.php';
         }
-        
-        if (!isset($mod['path'])) {
-            $mod['path'] = $mod['dir'] . '/Module.php';
+
+        if (!isset($mod->className)) {
+            $mod->className = $mod->namespace . '\Module';
         }
-         
-        if (!isset($mod['className'])) {
-            $mod['className'] = $mod['namespace'] . '\Module';
+
+        if (!isset($mod->enabled)) {
+            $mod->enabled = true;
         }
-        
-        if (!isset($mod['enabled'])) {
-            $mod['enabled'] = true;
-        }
-        $cacheDir = Path::noEndSep($this->config['cacheDir']);
+        $cacheDir = Path::noEndSep($this->config->cacheDir);
         // view service configuation gets paths with separator ends
-        $mod['voltCache'] = $cacheDir . DS . 'volt_' . $name . DS;
-        $mod['htmlCache'] = $cacheDir . DS . 'html_' . $name . DS;
-        $mod['viewsDir'] = $mod['dir'] . DS . 'views' . DS;
+        $mod->voltCache = $cacheDir . DS . 'volt_' . $name . DS;
+        $mod->htmlCache = $cacheDir . DS . 'html_' . $name . DS;
+        $mod->viewsDir = $mod->dir . DS . 'views' . DS;
     }
 
     /**
@@ -412,34 +404,29 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
      */
     protected function setActiveModule($modConfig) {
         $this->activeModule = $modConfig;
-        $bootstrap = $modConfig->get('bootstrap', 'mod_bootstrap.php');
-        $isAbsolute = Path::startsWith($bootstrap,ROOT_DIR);
-        if (!$isAbsolute) 
-        {
+        $bootstrap = $modConfig->bootstrap ?? 'mod_bootstrap.php';
+        $isAbsolute = Path::startsWith($bootstrap, ROOT_DIR);
+        if (!$isAbsolute) {
             $bootstrap = $modConfig->dir . DS . $bootstrap;
         }
-        
+
         if (file_exists($bootstrap)) {
-             return $bootstrap;
+            return $bootstrap;
+        } else {
+            throw new \Exception("File not found: " . $bootstrap);
         }
-        else {
-            throw new \Exception("File not found: " .  $bootstrap);
-        }
-       
     }
 
-    static public function uriModuleStr($myURI)
-    {
+    static public function uriModuleStr($myURI) {
         if (!empty($myURI) && $myURI !== '/') { // find match module name
             $ipos = strpos($myURI, '/');
             if ($ipos == 0) {
                 $ipos = strpos($myURI, '/', 1);
                 return ($ipos > 1) ? substr($myURI, 1, $ipos - 1) : substr($myURI, 1);
             }
-        }  
+        }
         return '';
     }
-
 
     /**
      * This action is executed before execute any action in the application
@@ -452,7 +439,7 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
     public function beforeException(Event $event, MvcDispatcher $dispatcher, \Exception $exception) {
         $di = $this->di;
 
-        $msg = "URI: " . $di->get('router')->getRewriteUri() . PHP_EOL;
+        $msg = "URI: " . $this->url . PHP_EOL;
 
         $msg .= $exception->getMessage() . PHP_EOL . $exception->getTraceAsString();
         if ($this->config->logErrors) {
@@ -467,8 +454,8 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
 
             if ($exception instanceof DispatcherException) {
                 switch ($exception->getCode()) {
-                    case Dispatcher::EXCEPTION_HANDLER_NOT_FOUND:
-                    case Dispatcher::EXCEPTION_ACTION_NOT_FOUND:
+                    case PhalconException::EXCEPTION_HANDLER_NOT_FOUND:
+                    case PhalconException::EXCEPTION_ACTION_NOT_FOUND:
                         $this->isMakingView = true;
                         $dispatcher->forward(
                                 ['controller' => 'errors',
@@ -498,9 +485,9 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         $di->setShared('config', $this->config);
         $di->setShared('ctx', $this);
 
-        
-        if ($this->config['logErrors']) {
-            $this->loggerService($this->config['errorLog']);
+
+        if ($this->config->logErrors) {
+            $this->loggerService($this->config->errorLog);
         }
 
         return $di;
@@ -525,58 +512,58 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
             } else {
                 $realName = $alias;
             }
-            if (!($myConfig instanceof \Phalcon\Config)) {
+            if (!($myConfig instanceof \Mod\XmlConfig)) {
                 throw new \Exception("Module configuration not found: $alias");
             }
             $this->dynamicConfig($myConfig, $realName);
             $this->modules[$alias] = $myConfig;
-            $myConfig['alias'] = $alias;
-            $myConfig['isDefaultModule'] = ($alias == $this->config['defaultModule']) ? true : false;
+            $myConfig->alias = $alias;
+            $myConfig->isDefaultModule = ($alias == $this->config->defaultModule) ? true : false;
             return $myConfig;
         }
         return null;
     }
-    
+
     public function init($config) {
         $this->config = $config;
-        date_default_timezone_set($config['timezone']);
-        
-        $config['phpVersion'] = phpversion();
-        $config['phalconVersion'] = phpversion('phalcon');
-        
+        date_default_timezone_set($config->timezone);
+
+        $config->phpVersion = phpversion();
+        $config->phalconVersion = phpversion('phalcon');
+
         $di = $this->initServices(); // setup di, and shared
         // Share the modules config
-        $di->setShared('modules', $config['module_data']);
-         //
+        $module_data = $config->module_data;
+        $di->setShared('modules', $module_data);
+        //
         // Phalcon\Config objects are sort of iterable  
         $this->allModules = [];
-        $module_data = $config['module_data'];
-        $alias = [];
         
+        $alias = [];
+
         foreach ($module_data as $modName => $moduleConfig) {
-            if (is_a($moduleConfig,'\Phalcon\Config')) { 
+            if (is_a($moduleConfig, '\Mod\XmlConfig')) {
                 $this->allModules[$modName] = $moduleConfig;
-                if (isset($moduleConfig['services'])) {
+                if (isset($moduleConfig->services)) {
                     // * must * have a Module.php containing 
                     //  static function {service}( $di )
                     // config with default name
                     $smod = $this->getModuleConfig($modName);
                     // activate its namespace
-                   (new \Phalcon\Loader())->registerNamespaces([
-                         $smod->namespace => $smod->dir
+                    (new \Phalcon\Loader())->registerNamespaces([
+                        $smod->namespace => $smod->dir
                     ])->register();
 
-                   // make a new instance of Module
-                    $module = new  $smod->className();
+                    // make a new instance of Module
+                    $module = new $smod->className();
                     $module->registerAutoloaders($di);
                     $module->registerServices($di);
                 }
-            }
-            else if (is_string($moduleConfig)) {
+            } else if (is_string($moduleConfig)) {
                 $alias[$modName] = $moduleConfig;
             }
         }
-        foreach($alias as $akey=>$value) {
+        foreach ($alias as $akey => $value) {
             if (isset($this->allModules[$value])) {
                 $this->allModules[$akey] = $this->allModules[$value];
             }
@@ -587,36 +574,33 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         $key = self::uriModuleStr($url);
         if (!empty($key)) {
             if ('/' . $key === $url) {
-        // see if the URL is a mapped keyword in config['urlmap']
-                 $config = $this->config;
-                 $test = $config->toArray();
-                 if ($config->exists('urlmap')) {
-                     $config = $config['urlmap'];
-                     if ($config->exists($key)) {
-                         $item = $config[$key];
-                         $url = '/' . $item->controller . '/' . $item->action;
-                         $_GET['_url'] = $url;
-                         $key = self::uriModuleStr($url);
-                     }
-                 }
-             }          
-        }
-        else {
+                // see if the URL is a mapped keyword in config['urlmap']
+                $config = $this->config;
+                $test = $config->toArray();
+                if ($config->exists('urlmap')) {
+                    $config = $config['urlmap'];
+                    if ($config->exists($key)) {
+                        $item = $config[$key];
+                        $url = '/' . $item->controller . '/' . $item->action;
+                        $_GET['_url'] = $url;
+                        $key = self::uriModuleStr($url);
+                    }
+                }
+            }
+        } else {
             $url = '/';
         }
         $this->uriModule = $key;
         $this->url = $url;
-        
-        $alias = (!empty($key) && isset($this->allModules[$key])) 
-                ? $key
-                : $config['defaultModule'];
+
+        $alias = (!empty($key) && isset($this->allModules[$key])) ? $key : $config->defaultModule;
         $myConfig = $this->getModuleConfig($alias);
         // nearly good to go
         return $this->setActiveModule($myConfig);
     }
 
     function dispatch(string $namespace, $registration = null) {
-        
+
         $this->dispatcherService($namespace);
         $this->routerService();
 
@@ -629,15 +613,14 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         // delay view creation and buffering
         //$app->useImplicitView(false); 
         $this->application = $app;
-        
+
         $response = $app->handle($this->url);
         $response->send();
     }
-    
-    public function getExplicitResponse($params)
-    {
-        $viewPick = $params['controller'] . '/' .  $params['action'];
-        
+
+    public function getExplicitResponse($params) {
+        $viewPick = $params['controller'] . '/' . $params['action'];
+
         $view = $this->makeExplicitView($viewPick);
         $view->setLayoutsDir('layouts/');
         $view->setRenderLevel(View::LEVEL_MAIN_LAYOUT);
@@ -650,11 +633,9 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         $view->finish();
 
         return $content;
-        
     }
-    
-    public function makeExplicitView($controllerAction)
-    {
+
+    public function makeExplicitView($controllerAction) {
         $view = $this->createView();
         $viewsDir = $this->getActionViewsDir($controllerAction);
         $view->setViewsDir($viewsDir);
@@ -662,4 +643,5 @@ class Context implements \Phalcon\Di\InjectionAwareInterface {
         $this->setViewUser($view);
         return $view;
     }
+
 }

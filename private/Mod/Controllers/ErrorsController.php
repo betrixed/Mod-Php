@@ -50,16 +50,17 @@ class ErrorsController  extends \Phalcon\Mvc\Controller {
             return true;
         
         //$this->buildAssets();
-        $this->view->msg = $this->di->get('router')->getRewriteUri();
+        //$this->view->msg = 'URI : ' . $this->ctx->url;
+        return $this->setupView();
     }
     private function setupView()
     {
         if (!$this->userAccess())
             return true;
         $this->buildAssets();
-        $this->view->setRenderLevel(
-            View::LEVEL_ACTION_VIEW
-        );
+        //$this->view->setRenderLevel(
+        //    View::LEVEL_ACTION_VIEW
+        //);
 
         $this->view->msg = $this->dispatcher->getParam('msg');
         $viewName = $this->dispatcher->getControllerName() . "/" . $this->dispatcher->getActionName();

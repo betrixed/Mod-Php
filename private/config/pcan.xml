@@ -2,7 +2,7 @@
 <tb>
     <b k='noSSL'>false</b>
     <b k='implicitViews'>true</b>
-    <s k='pcanDir'>${PHP_DIR}</s>
+    <s k='pcanDir'>${PHP_DIR}/Mod</s>
     <s k='timezone'>Australia/Sydney</s>
     <s k='domainName'>mrxyz.test</s>
     <s k='publicUrl'>mrxyz.test</s>
